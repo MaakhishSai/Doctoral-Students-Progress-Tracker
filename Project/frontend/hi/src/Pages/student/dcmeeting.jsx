@@ -31,7 +31,7 @@ const DCMeetings = () => {
     },
     {
       id: '2',
-      date: '2025-02-20',
+      date: '2025-02-21',
       time: '02:00 PM',
       fileName: 'DC_Report_Aug2023.pdf',
       notes: 'Literature review presentation',

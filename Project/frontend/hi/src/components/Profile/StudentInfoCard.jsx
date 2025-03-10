@@ -97,13 +97,13 @@ const StudentInfoCard = ({ studentData, onUpdate }) => {
             </div>
             {/* ORCID ID */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">ORCID ID</label>
+              <label className="text-sm font-medium text-muted-foreground">ORCID</label>
             <Input
               name="orcidId"
               value={editableData.orcidId}
               onChange={handleChange}
               className="border-primary"
-              placeholder="ORCID ID"
+              placeholder="ORCID"
             />
             </div>
             {/* Degree */}

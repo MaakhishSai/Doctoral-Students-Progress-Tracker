@@ -66,6 +66,7 @@ const recentPublications = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
   return (
     <Layout>
       <div className="space-y-6">
@@ -96,7 +97,7 @@ const Index = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle>Upcoming Meetings</CardTitle>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
+                  <Button variant="outline" size="sm" className="h-8 gap-1" onClick={()=>navigate('/dcmeeting')}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span>New Meeting</span>
                   </Button>
@@ -142,7 +143,7 @@ const Index = () => {
                 )}
               </CardContent>
               <CardFooter className="pt-1">
-                <Button variant="ghost" size="sm" className="w-full justify-between">
+                <Button variant="ghost" size="sm" className="w-full justify-between" onClick={()=>navigate('/dcmeeting')}>
                   <span>View all meetings</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -153,7 +154,7 @@ const Index = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle>Recent Publications</CardTitle>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
+                  <Button variant="outline" size="sm" className="h-8 gap-1" onClick={()=>navigate('/addpublication')}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span>Add Publication</span>
                   </Button>

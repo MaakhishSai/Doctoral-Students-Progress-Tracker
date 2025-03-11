@@ -2,6 +2,10 @@ package com.demo.rbac.controller;
 
 import com.demo.rbac.model.User;
 import com.demo.rbac.repository.UserRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @RestController
@@ -38,6 +43,15 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
     }
+    @GetMapping("/oauth2/authorization/google")
+public void initiateGoogleOAuth(HttpServletRequest request, HttpServletResponse response, 
+                                @RequestParam(required = false) String role) throws IOException {
+    if (role != null) {
+        request.getSession().setAttribute("requestedRole", role);
+    }
+    response.sendRedirect("/oauth2/authorization/google"); // Continue OAuth flow
+}
+    
 }
 
 // DTO for Login Request

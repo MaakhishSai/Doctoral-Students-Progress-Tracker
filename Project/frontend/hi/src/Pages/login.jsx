@@ -12,9 +12,11 @@ export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState("");
   const navigate = useNavigate(); // Initialize navigation
 
-  const handleGoogleSignIn = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+  const handleGoogleSignIn = (role) => {
+    document.cookie = `requestedRole=${role}; path=/`;
+    window.location.href = `http://localhost:8080/oauth2/authorization/google`;
   };
+  
 
   // const handleAdminLogin = () => {
   //   if (selectedRole === "PhD Coordinator") {
@@ -86,7 +88,7 @@ export default function LoginPage() {
               <Button
                 variant="outline"
                 className="w-full flex items-center gap-2 border-gray-500 bg-gray-800 text-white hover:bg-gray-700"
-                onClick={handleGoogleSignIn}
+                onClick={()=>handleGoogleSignIn("STUDENT")}
               >
                 <FcGoogle className="text-lg" /> Sign in with Google
               </Button>
@@ -111,7 +113,7 @@ export default function LoginPage() {
                 <Button
                   variant="outline"
                   className="w-full flex items-center gap-2 border-gray-500 bg-gray-800 text-white hover:bg-gray-700"
-                  onClick={()=>navigate('/index2')}
+                  onClick={()=>handleGoogleSignIn("SUPERVISOR")}
                 >
                   <FcGoogle className="text-lg" /> Sign in with Google
                 </Button>

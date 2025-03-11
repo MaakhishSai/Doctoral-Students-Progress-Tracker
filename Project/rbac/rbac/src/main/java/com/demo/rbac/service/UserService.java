@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+// import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +29,8 @@ public class UserService {
                 newUser = new User(email, hashedPassword, role);
             }
             else{
-                newUser = new User(email, role);
+                String hashedPassword = passwordEncoder.encode(password);
+                newUser = new User(email,hashedPassword, role);
             }
 
             if (role == UserRole.STUDENT) {
@@ -45,8 +46,9 @@ public class UserService {
                 }
             }
             if(role == UserRole.SUPERVISOR) {
-//                System.out.println("am i entering create user for supervisor");
-                User newSupervisor = new User(email, UserRole.SUPERVISOR);
+                String hashedPassword = passwordEncoder.encode(password);
+               System.out.println("am i entering create user for supervisor");
+                User newSupervisor = new User(email,hashedPassword,UserRole.SUPERVISOR);
 //                System.out.println(newSupervisor.getUserRole().name());
                 newUser = newSupervisor;
             }

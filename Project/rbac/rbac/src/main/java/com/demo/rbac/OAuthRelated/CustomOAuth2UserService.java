@@ -115,8 +115,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 System.out.println("before user creation");
 
                 // for all other than coordinator
-                // pass null password
-                User user = userService.createUser(email, "null", role);
+
+                User user = userService.createUser(email, "1@234", role);
                 System.out.println("before end of our function");
                 return new CustomUserDetails(user, oAuth2User.getAttributes());
             }
@@ -132,6 +132,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 //        if (email.equalsIgnoreCase(COORDINATOR_EMAIL)) {
 //            return UserRole.COORDINATOR;
 //        }
+// if (!email.endsWith("@nitc.ac.in")) {
+//     return null; // ❌ Reject if email is not from nitc.ac.in
+// }
 
         // Check if the email matches the PhD student pattern
         if (Pattern.compile("^[a-z]+_b\\d{6}[a-z]{2}@nitc\\.ac\\.in$").matcher(email).matches()) {
@@ -141,7 +144,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // Check if the email matches the faculty pattern (Supervisors)
         // for my gmail to work giving in nitc.ac.in
-        if (Pattern.compile("^[a-z]+@gmail\\.com$").matcher(email).matches()) {
+        if (Pattern.compile("^[a-z0-9]+@gmail\\.com$").matcher(email).matches()) {
             return UserRole.SUPERVISOR;
         }
 

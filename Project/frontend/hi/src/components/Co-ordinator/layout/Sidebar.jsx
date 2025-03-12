@@ -1,111 +1,79 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { 
-  LayoutDashboard, 
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { Home, User, Calendar, Book, Bell, LogOut, ChevronLeft, ChevronRight,  LayoutDashboard, 
   GraduationCap, 
   Users, 
   BookOpen, 
   FileText, 
   CheckCircle, 
-  Calendar,
-  LogOut, 
-  ChevronLeft, 
-  ChevronRight, 
-  UserPlus
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+  UserPlus} from "lucide-react";
 
+const navItems = [
+  { label: "Dashboard", href: "/dashboardc", icon: LayoutDashboard  },
+  { label: "Upload ExcelSheet", href: "/Excelpage", icon: GraduationCap  },
+  { label: "Student Profiles", href: "/scholarprofiles", icon: GraduationCap  },
+  { label: "SWAYAM Courses", href: "/Cocourses", icon: BookOpen },
+  { label: "Comprehensive Exam requests", href: "/co-comprehensive-exam", icon: CheckCircle }
+  // { label: "Notifications", href: "/notification", icon: Bell },
+];
 
-const Sidebar= ({ className }) => {
-  const [collapsed, setCollapsed] = useState(false);
+const Sidebar = () => {
+  const [expanded, setExpanded] = useState(true);
   const location = useLocation();
-  
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboardc', icon: LayoutDashboard },
-    // { name: 'Add Students', href: '/add-students', icon: UserPlus },
-    { name: 'Upload ExcelSheet', href: '/Excelpage', icon: GraduationCap },
-    { name: 'Swayam Courses', href: '/Cocourses', icon: BookOpen },
-    { name: 'Comprehensive Exam requests', href: '/co-comprehensive-exam', icon: CheckCircle },
-  ];
 
   return (
-    <div className={cn(
-      "flex flex-col h-screen bg-sidebar text-sidebar-foreground border-r border-sidebar-border relative transition-all-300",
-      collapsed ? "w-16" : "w-64",
-      className
-    )}>
-      <div className="p-4 h-16 flex items-center justify-between">
-        {!collapsed && (
-          <h1 className="font-semibold text-lg">Phd Connect</h1>
-        )}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-sidebar-foreground hover:bg-sidebar-accent ml-auto"
+    <div
+      className={`h-screen sticky top-0 left-0 bg-gray-900 border-r border-gray-700 transition-all duration-300 ${
+        expanded ? "w-64" : "w-20"
+      }`}
+    >
+      {/* Sidebar Header */}
+      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700">
+        {expanded && <h1 className="text-xl font-semibold text-white">Phd Connect</h1>}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="p-2 rounded-full hover:bg-gray-800 transition ml-auto"
+          aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
         >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </Button>
+          {expanded ? (
+            <ChevronLeft className="h-5 w-5 text-white" />
+          ) : (
+            <ChevronRight className="h-5 w-5 text-white" />
+          )}
+        </button>
       </div>
-      
-      <Separator className="bg-sidebar-border" />
-      
-      <div className="flex-1 py-4 overflow-y-auto scrollbar-hidden">
-        <nav className="space-y-1 px-2">
-          {navigation.map((item) => {
-            const isActive = location.pathname === item.href;
-            
-            return collapsed ? (
-              <TooltipProvider key={item.name}>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <Link
-                      to={item.href}
-                      className={cn(
-                        "flex items-center justify-center p-3 rounded-md transition-all-200",
-                        isActive 
-                          ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent"
-                      )}
-                    >
-                      <item.icon size={20} />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border">
-                    {item.name}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all-200",
-                  isActive 
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent"
-                )}
-              >
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.name}
-              </Link>
+
+      {/* Navigation Links */}
+      <nav className="flex-1 py-6 px-3">
+        <ul className="space-y-2">
+          {navItems.map(({ label, href, icon: Icon }) => {
+            const isActive = location.pathname === href;
+            return (
+              <li key={href}>
+                <NavLink
+                  to={href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 ${
+                    isActive ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-gray-800"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  {expanded && <span>{label}</span>}
+                </NavLink>
+              </li>
             );
           })}
-        </nav>
-      </div>
-      
-      <div className="p-4">
-        <Link to="/" className={cn(
-          "flex items-center py-2 text-sm font-medium rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-all-200",
-          collapsed ? "justify-center px-3" : "px-3"
-        )}>
-          <LogOut className={cn("h-5 w-5", collapsed ? "" : "mr-3")} />
-          {!collapsed && "Logout"}
-        </Link>
+        </ul>
+      </nav>
+
+      {/* Logout Button */}
+      <div className="mt-auto p-3 border-t border-gray-700">
+        <NavLink
+          to="/"
+          className="flex items-center gap-3 px-3 py-2 rounded-md text-gray-300 hover:bg-gray-800 transition-all duration-200"
+        >
+          <LogOut className="h-5 w-5" />
+          {expanded && <span>Logout</span>}
+        </NavLink>
       </div>
     </div>
   );

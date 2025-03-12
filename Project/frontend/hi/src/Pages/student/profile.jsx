@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Student/layout/Layout';
 import StudentInfoCard from '@/components/Student/Profile/StudentInfoCard';
 import DCInfoCard from '@/components/Student/Profile/DCInfoCard';
 import { useToast } from '@/hooks/use-toast';
+import axios from 'axios';
 
-// Mock student data - would come from API in a real app
-const studentData = {
+// Mock student data - keep other fields unchanged
+const mockStudentData = {
   profilePicture: '/placeholder.svg',
-  name: 'Manhaas Nunna',
   rollNumber: 'P220545CS',
-  email: 'man@example.edu',
   orcidId: '0000-0002-1825-0097',
   degree: 'PhD',
   department: 'CSED',
@@ -18,8 +17,8 @@ const studentData = {
   researchArea: 'Machine Learning and Artificial Intelligence for Healthcare Systems'
 };
 
-// Mock DC data - would come from API in a real app
-const dcData = {
+// Mock DC data - remains unchanged
+const mockDCData = {
   chair: {
     name: 'Dr. Rajesh Sharma',
     email: 'rajesh.sharma@example.edu'
@@ -29,19 +28,36 @@ const dcData = {
     email: 'priya.verma@example.edu'
   },
   members: [
-    {
-      id: 1,
-      name: 'Dr. Sunil Mehta',
-      email: 'sunil.mehta@example.edu'
-    },
-
+    { id: 1, name: 'Dr. Sunil Mehta', email: 'sunil.mehta@example.edu' }
   ]
 };
 
 const Profile = () => {
-  const [student, setStudent] = useState(studentData);
-  const [dc, setDC] = useState(dcData);
+  const [student, setStudent] = useState(mockStudentData);
+  const [dc, setDC] = useState(mockDCData);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/user/profile', {
+          withCredentials: true
+        });
+
+        // Update only name and email in the student data
+        setStudent(prevStudent => ({
+          ...prevStudent,
+          name: response.data.name,
+          email: response.data.email
+        }));
+
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
 
   const handleStudentUpdate = (updatedData) => {
     setStudent({ ...student, ...updatedData });
@@ -60,6 +76,8 @@ const Profile = () => {
       duration: 3000,
     });
   };
+
+  if (!student) return <div>Loading...</div>;
 
   return (
     <Layout>

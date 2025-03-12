@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Student/layout/Layout';
 import ProfileCard from '@/components/Student/Dashboard/ProfileCard';
 import StatsCard from '@/components/Student/Dashboard/StatsCard';
@@ -22,13 +22,11 @@ import {
   PlusCircle, 
   Clock 
 } from 'lucide-react';
+import axios from 'axios';
 
-// Mock data - would come from API in a real app
+// Mock data - Unchanged fields
 const mockProfileData = {
-  name: "Manhaas",
   rollNumber: "P220780CS",
-  email: "man@example.edu",
-  // phone: "+91 9876543210",
   orcid: "0000-0001-2345-6789",
   avatarUrl: "/placeholder.svg"
 };
@@ -37,13 +35,13 @@ const upcomingMeetings = [
   {
     id: 1,
     title: "DC Committee Meeting",
-    date: "March 15, 2025",
+    date: "Nov 15, 2024",
     status: "scheduled",
   },
   {
     id: 2,
     title: "Progress Review",
-    date: "March 05, 2025",
+    date: "Dec 05, 2024",
     status: "pending",
   }
 ];
@@ -54,25 +52,61 @@ const recentPublications = [
     title: "Deep Learning Approaches for Natural Language Processing in Healthcare",
     journal: "IEEE Transactions on Medical Imaging",
     status: "published",
-    date: "jan 1, 2025",
+    date: "jan 1, 2024",
   },
   {
     id: 2,
     title: "Novel Approaches to Quantum Computing Algorithms",
     journal: "Physical Review Letters",
     status: "Editorial Revision",
-    date: "june 15, 2025",
+    date: "june 15, 2024",
   }
 ];
 
 const Index = () => {
+  const [profileData, setProfileData] = useState(mockProfileData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:8080/api/user/profile', {
+          withCredentials: true
+        });
+
+        // Check if response has data
+        if (response.data && response.data.name && response.data.email) {
+          setProfileData(prevData => ({
+            ...prevData,
+            name: response.data.name,
+            email: response.data.email
+          }));
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (err) {
+        console.error('Error fetching profile data:', err);
+        setError('Failed to load profile data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
   return (
     <Layout>
       <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <ProfileCard profileData={mockProfileData} />
+            <ProfileCard profileData={profileData} />
           </div>
           
           <div className="space-y-6">
@@ -84,7 +118,7 @@ const Index = () => {
             />
             <StatsCard
               title="DC Meetings"
-              description="Next meeting on March 15"
+              description="Next meeting on Nov 15"
               icon={<Calendar className="h-6 w-6" />}
             
             />
@@ -97,7 +131,7 @@ const Index = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle>Upcoming Meetings</CardTitle>
-                  <Button variant="outline" size="sm" className="h-8 gap-1" onClick={()=>navigate('/dcmeeting')}>
+                  <Button variant="outline" size="sm" className="h-8 gap-1">
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span>New Meeting</span>
                   </Button>
@@ -143,7 +177,7 @@ const Index = () => {
                 )}
               </CardContent>
               <CardFooter className="pt-1">
-                <Button variant="ghost" size="sm" className="w-full justify-between" onClick={()=>navigate('/dcmeeting')}>
+                <Button variant="ghost" size="sm" className="w-full justify-between">
                   <span>View all meetings</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -154,7 +188,7 @@ const Index = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle>Recent Publications</CardTitle>
-                  <Button variant="outline" size="sm" className="h-8 gap-1" onClick={()=>navigate('/addpublication')}>
+                  <Button variant="outline" size="sm" className="h-8 gap-1">
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span>Add Publication</span>
                   </Button>

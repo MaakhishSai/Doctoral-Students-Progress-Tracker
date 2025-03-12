@@ -56,14 +56,14 @@ const Header= ({ studentName }) => {
           </Button>
           <NotificationPanel open={notificationsOpen} onClose={() => setNotificationsOpen(false)} /> */}
 
-          <Button 
+          {/* <Button 
             variant="ghost" 
             size="icon" 
             onClick={toggleDarkMode}
             className="transition-all-200 hover:bg-accent/10"
           >
             {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
+          </Button> */}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

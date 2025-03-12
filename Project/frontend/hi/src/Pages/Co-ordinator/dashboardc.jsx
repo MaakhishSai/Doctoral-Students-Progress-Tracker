@@ -1,11 +1,15 @@
 import React from "react";
 import PageLayout from "@/components/Co-ordinator/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserCheck, Calendar, BookOpen, FileText, Clock, FilePlus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent,CardDescription,CardHeader, CardTitle,CardFooter } from "@/components/ui/card";
 
+// import { UserCheck, Calendar, BookOpen, FileText, Clock, FilePlus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { UploadCloud, BookOpen, ClipboardCheck,ChevronRight} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 const Dashboardc= () => {
   // Sample data for DC meetings only
+  const navigate= useNavigate();
   const upcomingDCMeetings = [
     { id: 1, title: "DC Meeting - Rahul Kumar", date: "March 12, 2025", time: "10:00 AM" },
     { id: 2, title: "DC Meeting - Priya Singh", date: "March 10, 2025", time: "2:00 PM" },
@@ -47,139 +51,76 @@ const Dashboardc= () => {
         <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
         
         {/* Stats Row */}
-        {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="shadow-soft animate-fade-in">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-primary/10 p-3 rounded-full">
-                  <UserCheck className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Scholars</p>
-                  <h3 className="text-2xl font-semibold">8</h3>
-                </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="space-y-1">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">Upload Courses</CardTitle>
+                <UploadCloud className="h-5 w-5 text-phd-accent" />
               </div>
-            </CardContent>
-          </Card> */}
-          
-          {/* <Card className="shadow-soft animate-fade-in">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
-                  <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">DC Meetings</p>
-                  <h3 className="text-2xl font-semibold">12</h3>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-soft animate-fade-in">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
-                  <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Publications</p>
-                  <h3 className="text-2xl font-semibold">24</h3>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-soft animate-fade-in">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-amber-100 dark:bg-amber-900/30 p-3 rounded-full">
-                  <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">SWAYAM Courses</p>
-                  <h3 className="text-2xl font-semibold">16</h3>
-                </div>
-              </div>
-            </CardContent>
-          </Card> */}
-        {/* </div> */}
-        
-        {/* Main content area - Meetings and Requests */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
-          {/* Upcoming DC Meetings */}
-          {/* <Card className="shadow-soft animate-fade-in">
-            <CardHeader>
-              <CardTitle className="text-lg">Upcoming DC Meetings</CardTitle>
+              <CardDescription>
+                Upload and manage your course data
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {upcomingDCMeetings.length > 0 ? (
-                <div className="space-y-4">
-                  {upcomingDCMeetings.map((meeting) => (
-                    <div 
-                      key={meeting.id} 
-                      className="flex gap-4 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-all-200"
-                    >
-                      <div className="bg-primary/10 p-2 rounded-full h-fit">
-                        <Clock className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium">{meeting.title}</h3>
-                        <div className="flex justify-between mt-1">
-                          <p className="text-sm text-muted-foreground">{meeting.date}</p>
-                          <p className="text-sm font-medium">{meeting.time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div> */}
-              {/* ) : (
-                <div className="flex flex-col items-center justify-center py-6 text-center">
-                  <p className="text-muted-foreground">No upcoming DC meetings scheduled.</p>
-                </div>
-              )}
+              <p className="text-sm mb-4">
+              Import your swayam course information from Excel or CSV files.
+              </p>
+              <CardFooter className="pt-1">
+                <Button variant="ghost" size="sm" className="w-full justify-between">
+                  <span>Go to upload</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </CardFooter>
             </CardContent>
           </Card>
-           */}
-          {/* Pending Requests */}
-          {/* <Card className="shadow-soft animate-fade-in">
-            <CardHeader>
-              <CardTitle className="text-lg">Pending Requests</CardTitle>
+
+          {/* <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="space-y-1">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">Swayam Courses</CardTitle>
+                <BookOpen className="h-5 w-5 text-phd-accent" />
+              </div>
+              <CardDescription>
+                Browse available Swayam courses
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {pendingRequests.length > 0 ? (
-                <div className="space-y-4">
-                  {pendingRequests.map((request) => (
-                    <div 
-                      key={request.id} 
-                      className="flex gap-4 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-all-200"
-                    >
-                      <div className="bg-amber-100 dark:bg-amber-900/30 p-2 rounded-full h-fit">
-                        <FilePlus className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <h3 className="font-medium">{request.title}</h3>
-                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                            {request.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          <span className="font-medium">{request.type}</span> from {request.scholar}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">Submitted on {request.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : ( */}
-                {/* <div className="flex flex-col items-center justify-center py-6 text-center">
-                  <p className="text-muted-foreground">No pending requests.</p>
-                </div>
-              )}
+              <p className="text-sm mb-4">
+                Explore online courses available through the Swayam platform.
+              </p>
+              <CardFooter className="pt-1">
+                <Button variant="ghost" size="sm" className="w-full justify-between">
+                  <span>Browse Courses</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </CardFooter>
             </CardContent>
           </Card> */}
-        {/* </div> */}
+
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="space-y-1">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">Exam Requests</CardTitle>
+                <ClipboardCheck className="h-5 w-5 text-phd-accent" />
+              </div>
+              <CardDescription>
+                Manage comprehensive exam requests
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm mb-4">
+                Submit and track your comprehensive examination requests.
+              </p>
+              <CardFooter className="pt-1">
+                <Button variant="ghost" size="sm" className="w-full justify-between">
+                  <span>View all meetings</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </CardContent>
+          </Card>
+          </div>
       </div>
     </PageLayout>
   );

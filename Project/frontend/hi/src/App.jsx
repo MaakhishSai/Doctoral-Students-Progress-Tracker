@@ -13,11 +13,13 @@ import ScholarProfiles from "./Pages/Guide/ScholarProfile";
 import  Dashboardc from "./Pages/Co-ordinator/dashboardc.jsx"; 
 import  UploadExcel from "./Pages/Co-ordinator/Excelpage.jsx"; 
 import  CourseExcel from "./Pages/Co-ordinator/courses.jsx"; 
+import  ExamAnnouncement from "./Pages/Co-ordinator/ExamAnnoucements.jsx"; 
 import  DCMeetingsg from "./Pages/Guide/DCmeetings.jsx"; 
 import  MeetingApprovals from "./Pages/Guide/meetingapprovals.jsx"; 
 import  Publicationsg from "./Pages/Guide/publication.jsx"; 
 import  Actions from "./Pages/Guide/coursesg.jsx"; 
 import StudentPublications from "./pages/Guide/studentpublications";
+import Compre from "./pages/Guide/compre-exam.jsx";
 import ScholarProfiless from "./pages/Co-ordinator/ScholarProfile";
 
 // import Index2 from "./Pages/index2"; 
@@ -49,6 +51,8 @@ export default function App() {
         <Route path="/Cocourses" element={<CourseExcel />} />
         <Route path="/scholarprofiles" element={<ScholarProfiless />} />
         <Route path="/exam" element={<Exam />} />
+        <Route path="/cocompre" element={<ExamAnnouncement />} />
+        <Route path="/comprehensive-exam" element={<Compre />} />
       </Routes>
     </Router>
   );

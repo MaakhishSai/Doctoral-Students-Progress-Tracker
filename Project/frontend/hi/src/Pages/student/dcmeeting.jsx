@@ -158,7 +158,7 @@ const DCMeetings = () => {
             
             <DialogContent  className="sm:max-w-[500px] backdrop-blur-sm bg-white/90 border border-white/40 absolute top-[45%] left-[55%] transform -translate-x-1/2 -translate-y-1/2">
               <DialogHeader>
-                <DialogTitle>Schedule New DC Meeting</DialogTitle>
+                <DialogTitle>Submit DC Minutes</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">

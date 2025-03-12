@@ -23,7 +23,7 @@ const UploadExcel = () => {
 
     setIsUploading(true);
 
-    // Simulate processing EExcel data
+    // Simulate processing Excel data
     setTimeout(() => {
       // Mock data after Excel processing
       const mockStudents = [

@@ -3,7 +3,7 @@ import PageLayout from "@/components/Co-ordinator/layout/Layout";
 import ScholarsList from "@/components/Guide/Scholars/ScholarList";
 import ScholarDetail from "@/components/Guide/Scholars/ScholarDetail";
 
-// Sample data for ddemonstration
+// Sample data for demonstration
 const SAMPLE_SCHOLARS = [
   {
     id: "1",

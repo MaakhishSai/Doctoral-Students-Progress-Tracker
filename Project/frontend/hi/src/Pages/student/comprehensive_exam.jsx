@@ -35,22 +35,6 @@ const Exam = () => {
   const announcements = [
     {
       id: 1,
-      examName: 'Comprehensive Exam - 2023',
-      examDate: '2023-05-15',
-      subject: 'Computer Science Core and Machine Learning',
-      registrationDeadline: '2023-04-30',
-      isOpen: false,
-    },
-    {
-      id: 2,
-      examName: 'Comprehensive Exam - 2023',
-      examDate: '2023-11-20',
-      subject: 'Computer Science Core and Data Science',
-      registrationDeadline: '2023-10-31',
-      isOpen: false,
-    },
-    {
-      id: 3,
       examName: 'Comprehensive Exam - 2024',
       examDate: '2024-05-10',
       subject: 'Computer Science Core and AI',

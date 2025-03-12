@@ -13,7 +13,7 @@ const navItems = [
   { label: "Upload ExcelSheet", href: "/Excelpage", icon: GraduationCap  },
   { label: "Student Profiles", href: "/scholarprofiles", icon: GraduationCap  },
   { label: "SWAYAM Courses", href: "/Cocourses", icon: BookOpen },
-  { label: "Comprehensive Exam requests", href: "/co-comprehensive-exam", icon: CheckCircle }
+  { label: "Comprehensive Exam Management", href: "/cocompre", icon: CheckCircle }
   // { label: "Notifications", href: "/notification", icon: Bell },
 ];
 

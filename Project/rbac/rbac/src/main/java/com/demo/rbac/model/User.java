@@ -27,11 +27,19 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
+    // username column is present in database not in entity class
+    @Column(nullable = true) // Username can be optional
+    private String username;
+
+    // fixed datatype for enabled field
+    @Column(columnDefinition = "BIT(1)")
     private boolean enabled = true;
 
     // For student-supervisor mapping
     @ManyToOne
     @JoinColumn(name = "supervisor_id")
+    // this is a foreign key mapping for supervisor relationship
+    // many students to single supervisor
     private User supervisor;
 
     public User(String email, String password, UserRole role){

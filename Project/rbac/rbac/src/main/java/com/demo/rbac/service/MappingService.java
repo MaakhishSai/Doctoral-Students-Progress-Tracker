@@ -2,6 +2,7 @@ package com.demo.rbac.service;
 
 import com.demo.rbac.model.User;
 import com.demo.rbac.model.UserRole;
+import com.demo.rbac.repository.AuthorizationRepository;
 import com.demo.rbac.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;

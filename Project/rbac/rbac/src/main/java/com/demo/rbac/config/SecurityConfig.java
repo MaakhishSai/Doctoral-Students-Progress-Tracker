@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login**", "/error**", "/api/auth/**", "/oauth2/**").permitAll()
                 .requestMatchers("/api/coordinator/**").hasRole("COORDINATOR")
                 .requestMatchers("/api/supervisor/**").hasRole("SUPERVISOR")
+                    .requestMatchers("/api/user/profile").authenticated()
                 .requestMatchers("/api/student/**").hasRole("STUDENT")
                 .anyRequest().authenticated()
             )
@@ -79,20 +80,20 @@ public class SecurityConfig {
     }
 
     private void handleOAuth2Success(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.Authentication authentication) throws Exception {
-        // ✅ Get logged-in user email
+        //  Get logged-in user email
         String userEmail = authentication.getName();
 
-        // ✅ Retrieve requested role from cookies instead of session
+        //  Retrieve requested role from cookies instead of session
         String requestedRoleStr = getCookieValue(request, "requestedRole");
 
-        System.out.println("🔵 Requested Role from Cookie: " + requestedRoleStr);
+        System.out.println("Requested Role from Cookie: " + requestedRoleStr);
 
         if (requestedRoleStr == null) {
             response.sendRedirect("http://localhost:5173/login?error=role_missing");
             return;
         }
 
-        // ✅ Convert requested role string to enum safely
+        //  Convert requested role string to enum safely
         UserRole requestedRole;
         try {
             requestedRole = UserRole.valueOf(requestedRoleStr.toUpperCase());
@@ -101,7 +102,7 @@ public class SecurityConfig {
             return;
         }
 
-        // ✅ Fetch actual role from database
+        //  Fetch actual role from database
         Optional<User> optionalUser = userRepository.findByEmail(userEmail);
         if (optionalUser.isEmpty()) {
             response.sendRedirect("http://localhost:5173/login?error=user_not_found");
@@ -111,13 +112,20 @@ public class SecurityConfig {
         User user = optionalUser.get();
         UserRole actualRole = user.getUserRole();
 
-        // ✅ Role mismatch check
+        //  Role mismatch check
         if (!actualRole.equals(requestedRole)) {
             response.sendRedirect("http://localhost:5173/login?error=role_mismatch");
             return;
         }
 
-        // ✅ Redirect based on actual role
+        // Store user info in a cookie for front end usage
+        Cookie userCookie = new Cookie("username", user.getUsername());
+        userCookie.setPath("/");
+        userCookie.setHttpOnly(false);
+        // adding the user cookie along with the response
+        response.addCookie(userCookie);
+
+        //  Redirect based on actual role
         switch (actualRole) {
             case STUDENT:
                 response.sendRedirect("http://localhost:5173/student-dashboard");
@@ -133,7 +141,7 @@ public class SecurityConfig {
         }
     }
 
-    // ✅ Utility Method: Get cookie value by name
+    //  Utility Method: Get cookie value by name
     private String getCookieValue(HttpServletRequest request, String name) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {

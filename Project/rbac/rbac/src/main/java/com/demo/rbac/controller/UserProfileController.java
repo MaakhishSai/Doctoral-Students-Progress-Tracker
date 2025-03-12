@@ -1,9 +1,7 @@
 package com.demo.rbac.controller;
 
-import com.demo.rbac.OAuthRelated.CustomUserDetails;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,25 +10,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 public class UserProfileController {
 
-    @GetMapping("/getUserProfile")
-    public ResponseEntity<Map<String, String>> getUserProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    @GetMapping("/profile")
+    public Map<String, String> getProfile(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        if (oAuth2User == null) {
+            throw new RuntimeException("User not authenticated");
         }
 
-        // Extract email from authenticated user
-        System.out.println("we are entering user profile controller");
-        String email = userDetails.getUsername(); // Assuming getUsername() returns email
+        // Extracting user information from OAuth2User
+        String name = oAuth2User.getAttribute("name");
+        String email = oAuth2User.getAttribute("email");
 
-        // Create a response map
+        // Preparing the response as a JSON object
         Map<String, String> response = new HashMap<>();
+        response.put("name", name);
         response.put("email", email);
 
-        return ResponseEntity.ok(response);
-
+        return response;
     }
 }
-

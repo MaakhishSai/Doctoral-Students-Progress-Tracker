@@ -12,8 +12,8 @@ const navItems = [
   { label: "Dashboard", href: "/index2", icon: LayoutDashboard  },
   { label: "Student Profiles", href: "/scholarprofile", icon: GraduationCap  },
   { label: "DC Meetings", href: "/meetings_g", icon: Calendar  },
-  { label: "SWAYAM Courses", href: '/coursesg', icon: BookOpen  },
-  { label: 'Publications', href: '/publicationsg', icon: FileText },
+  { label: "SWAYAM Course Requests", href: '/coursesg', icon: BookOpen  },
+  { label: 'Student Publications', href: '/publicationsg', icon: FileText },
   { label: "Comprehensive Exam ", href: '/comprehensive-exam', icon: CheckCircle }
   // { label: "Notifications", href: "/notification", icon: Bell },
 ];

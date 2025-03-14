@@ -306,7 +306,7 @@ const SwayamCourseApprovals = () => {
          
             <>
             <div className="bg-white rounded-xl p-6 shadow-sm border border-border">
-              <h2 className="text-xl font-semibold mb-4">Upload Excel File</h2>
+              <h2 className="text-xl font-semibold mb-4">Upload Courses File</h2>
               <FileUpload
                 onFileSelect={handleFileSelect}
                 accept=".xlsx,.xls,.csv"

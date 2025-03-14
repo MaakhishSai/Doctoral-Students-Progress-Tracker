@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useCallback} from "react";
 import { 
   Calendar, 
   Search, 
@@ -11,7 +11,8 @@ import {
   CheckCircle, 
   XCircle, 
   Clock, 
-  AlignLeft 
+  AlignLeft,
+  Eye
 } from "lucide-react";
 import FileUpload from "@/components/Co-ordinator/FileUpload";
 import DashboardLayout from "@/components/Co-ordinator/layout/Layout";
@@ -58,71 +59,6 @@ import { cn } from "@/lib/utils";
 
 // Exam types
 
-const handleUpload = () => {
-    if (!file) return;
-
-    setIsUploading(true);
-
-    // Simulate processing Excel data
-    setTimeout(() => {
-      // Mock data after Excel processing
-      const mockCourses = [
-        {
-          id: "SWYM2023001",
-          name: "Advanced Machine Learning",
-          provider: "NPTEL",
-          duration: "12 weeks",
-          credits: 4,
-          startDate: "2023-08-15",
-        },
-        {
-          id: "SWYM2023002",
-          name: "Computer Vision and Applications",
-          provider: "IIT Bombay",
-          duration: "8 weeks",
-          credits: 3,
-          startDate: "2023-09-01",
-        },
-        {
-          id: "SWYM2023003",
-          name: "Natural Language Processing",
-          provider: "IIT Madras",
-          duration: "10 weeks",
-          credits: 4,
-          startDate: "2023-08-20",
-        },
-        {
-          id: "SWYM2023004",
-          name: "Big Data Analytics",
-          provider: "NPTEL",
-          duration: "8 weeks",
-          credits: 3,
-          startDate: "2023-09-10",
-        },
-      ];
-
-      setCourses(mockCourses);
-      setIsUploading(false);
-      setUploadSuccess(true);
-      
-      toast.success("Course data has been successfully processed", {
-        description: `${mockCourses.length} courses imported from ${file.name}`,
-      });
-    }, 2000);
-  };
-
-
-  const handleSubmit = () => {
-    setIsSubmitted(true);
-    toast.success("Swayam Courses have been submitted", {
-      description: `${courses.length} course records have been successfully added to the system.`,
-    });
-  };
-  const handleFileSelect = (selectedFile) => {
-    setFile(selectedFile);
-    setUploadSuccess(false);
-    setIsSubmitted(false);
-  };
 const ExamAnnouncement = () => {
   // Common state
   const [activeTab, setActiveTab] = useState("announcements");
@@ -170,7 +106,80 @@ const ExamAnnouncement = () => {
     deadline: "",
     eligibility: ""
   });
-
+  const [Results, setResults] = useState([]);
+  const [isViewing, setIsViewing] = useState(false);
+   const handleUpload = useCallback(async () => {
+      if (!file) return;
+      setIsUploading(true);
+  
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      try {
+        const response = await fetch("http://localhost:8080/api/results/upload", {
+          method: "POST",
+          body: formData,
+          mode: 'cors'
+        });
+  
+        if (!response.ok) throw new Error("Failed to upload file");
+  
+        const data = await response.json();
+        setResults(data);
+        setUploadSuccess(true); // Hide upload after first submission
+        localStorage.setItem("uploadCompleted", "true"); // Prevent upload option from appearing
+  
+        toast.success("Results data processed", {
+          description: `${data.length} Results imported from ${file.name}`,
+        });
+      } catch (error) {
+        toast.error("Error uploading file");
+      } finally {
+        setIsUploading(false);
+      }
+    }, [file]);
+    const fetchStudents = useCallback(async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/results/all");
+    
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+    
+        const data = await response.json();
+        console.log("Fetched students:", data);
+    
+        if (data.length > 0) {
+          setResults(data);
+          setUploadSuccess(true);
+          localStorage.setItem("uploadCompleted", "true");
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+        toast.error(`Fetch error: ${error.message}`);
+      }
+    }, []);
+    useEffect(() => {
+      if (localStorage.getItem("uploadCompleted") === "true") {
+        fetchStudents();  // Ensure data is fetched on refresh
+      }
+    }, [fetchStudents]);
+    const handleViewStudents = () => {
+      setIsViewing(true);
+      fetchStudents(); // Ensure fresh data is fetched
+    };
+  
+    const handleSubmit = () => {
+      setIsSubmitted(true);
+      toast.success("Swayam Results have been submitted", {
+        description: `${courses.length} course records have been successfully added to the system.`,
+      });
+    };
+    const handleFileSelect = (selectedFile) => {
+      setFile(selectedFile);
+      setUploadSuccess(false);
+      setIsSubmitted(false);
+    };
   useEffect(() => {
     // Load data for both tabs
     const loadAllData = async () => {
@@ -960,8 +969,10 @@ const ExamAnnouncement = () => {
             </Dialog>
           </TabsContent>
           <TabsContent value="upload" className="space-y-8">
+          {!uploadSuccess ? (
+            <>
             <div className="bg-white rounded-xl p-6 shadow-sm border border-border">
-              <h2 className="text-xl font-semibold mb-4">Upload Excel File</h2>
+              <h2 className="text-xl font-semibold mb-4">Upload Results File</h2>
               <FileUpload
                 onFileSelect={handleFileSelect}
                 accept=".xlsx,.xls,.csv"
@@ -978,14 +989,23 @@ const ExamAnnouncement = () => {
                 </Button>
               </div>
             </div>
+            </>
+            ):(
+              <>
+              <div className="mt-6">
+              <Button onClick={handleViewStudents} className="flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                Comprehensive Exam Results
+              </Button>
+            </div>
 
-            {uploadSuccess && courses.length > 0 && (
+            {isViewing && Results.length > 0 &&  (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-border animate-slide-up mb-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Available Swayam Courses</h2>
-                  <Button onClick={handleSubmit} className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold">Comprehensive Exam Results</h2>
+                  {/* <Button onClick={handleSubmit} className="flex items-center gap-2">
                     Upload Courses
-                  </Button>
+                  </Button> */}
                 </div>
                 <div className="overflow-auto">
                   <Table>
@@ -993,21 +1013,24 @@ const ExamAnnouncement = () => {
                       <TableRow>
                         <TableHead>ID</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Provider</TableHead>
-                        <TableHead>Duration</TableHead>
-                        <TableHead>Credits</TableHead>
-                        <TableHead>Start Date</TableHead>
+                        <TableHead>Core(20)</TableHead>
+                        <TableHead>Specialization(80)</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead> Status</TableHead>
+                        
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {courses.map((course) => (
-                        <TableRow key={course.id}>
-                          <TableCell className="font-medium">{course.id}</TableCell>
-                          <TableCell>{course.name}</TableCell>
-                          <TableCell>{course.provider}</TableCell>
-                          <TableCell>{course.duration}</TableCell>
-                          <TableCell>{course.credits}</TableCell>
-                          <TableCell>{new Date(course.startDate).toLocaleDateString()}</TableCell>
+                      {Results.map((Results) => (
+                        <TableRow key={Results.id}>
+                          <TableCell className="font-medium">{Results.id}</TableCell>
+                          <TableCell>{Results.name}</TableCell>
+                          <TableCell>{Results.core}</TableCell>
+                          <TableCell>{Results.specialization}</TableCell>
+                          <TableCell>{Results.specialization+Results.core}</TableCell>
+                          <TableCell>{Results.specialization + Results.core >= 35 ? "Pass" : "Fail"}</TableCell>
+
+                          
                         </TableRow>
                       ))}
                     </TableBody>
@@ -1015,6 +1038,9 @@ const ExamAnnouncement = () => {
                 </div>
               </div>
             )}
+            </>
+            )
+          }
           </TabsContent>
           
         </Tabs>

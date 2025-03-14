@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useCallback,useEffect } from "react";
 import { FileText, Search, Filter, Download, Eye, BookOpen } from "lucide-react";
 import DashboardLayout from "@/components/Co-ordinator/layout/Layout";
 import { Input } from "@/components/ui/input";
@@ -91,58 +91,36 @@ const SwayamCourseApprovals = () => {
     setIsSubmitted(false);
   };
 
-  const handleUpload = () => {
+  const handleUpload = useCallback(async () => {
     if (!file) return;
-
     setIsUploading(true);
 
-    // Simulate processing Excel data
-    setTimeout(() => {
-      // Mock data after Excel processing
-      const mockCourses = [
-        {
-          id: "SWYM2023001",
-          name: "Advanced Machine Learning",
-          provider: "NPTEL",
-          duration: "12 weeks",
-          credits: 4,
-          startDate: "2023-08-15",
-        },
-        {
-          id: "SWYM2023002",
-          name: "Computer Vision and Applications",
-          provider: "IIT Bombay",
-          duration: "8 weeks",
-          credits: 3,
-          startDate: "2023-09-01",
-        },
-        {
-          id: "SWYM2023003",
-          name: "Natural Language Processing",
-          provider: "IIT Madras",
-          duration: "10 weeks",
-          credits: 4,
-          startDate: "2023-08-20",
-        },
-        {
-          id: "SWYM2023004",
-          name: "Big Data Analytics",
-          provider: "NPTEL",
-          duration: "8 weeks",
-          credits: 3,
-          startDate: "2023-09-10",
-        },
-      ];
+    const formData = new FormData();
+    formData.append("file", file);
 
-      setCourses(mockCourses);
-      setIsUploading(false);
-      setUploadSuccess(true);
-      
-      toast.success("Course data has been successfully processed", {
-        description: `${mockCourses.length} courses imported from ${file.name}`,
+    try {
+      const response = await fetch("http://localhost:8080/api/courses/upload", {
+        method: "POST",
+        body: formData,
+        mode: 'cors'
       });
-    }, 2000);
-  };
+
+      if (!response.ok) throw new Error("Failed to upload file");
+
+      const data = await response.json();
+      setCourses(data);
+      setUploadSuccess(true); // Hide upload after first submission
+      localStorage.setItem("uploadCompleted", "true"); // Prevent upload option from appearing
+
+      toast.success("Courses data processed", {
+        description: `${data.length} Courses imported from ${file.name}`,
+      });
+    } catch (error) {
+      toast.error("Error uploading file");
+    } finally {
+      setIsUploading(false);
+    }
+  }, [file]);
 
   const handleSubmit = () => {
     setIsSubmitted(true);
@@ -266,7 +244,37 @@ const SwayamCourseApprovals = () => {
       name,
     }));
   };
-
+  const [isViewing, setIsViewing] = useState(false);
+  const fetchStudents = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/courses/all");
+  
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      console.log("Fetched students:", data);
+  
+      if (data.length > 0) {
+        setCourses(data);
+        setUploadSuccess(true);
+        localStorage.setItem("uploadCompleted", "true");
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error(`Fetch error: ${error.message}`);
+    }
+  }, []);
+  useEffect(() => {
+    if (localStorage.getItem("uploadCompleted") === "true") {
+      fetchStudents();  // Ensure data is fetched on refresh
+    }
+  }, [fetchStudents]);
+  const handleViewStudents = () => {
+    setIsViewing(true);
+    fetchStudents(); // Ensure fresh data is fetched
+  };
   return (
     <DashboardLayout>
       <div className="animate-fade-in">
@@ -291,7 +299,12 @@ const SwayamCourseApprovals = () => {
           </TabsList>
 
           {/* Upload Courses Tab */}
-          <TabsContent value="upload" className="space-y-8">
+           <TabsContent value="upload" className="space-y-8">
+          {!uploadSuccess ? (
+            
+            
+         
+            <>
             <div className="bg-white rounded-xl p-6 shadow-sm border border-border">
               <h2 className="text-xl font-semibold mb-4">Upload Excel File</h2>
               <FileUpload
@@ -310,14 +323,22 @@ const SwayamCourseApprovals = () => {
                 </Button>
               </div>
             </div>
-
-            {uploadSuccess && courses.length > 0 && (
+            </>
+          ):(
+            <>
+            <div className="mt-6">
+              <Button onClick={handleViewStudents} className="flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                View Course Details
+              </Button>
+            </div>
+            {isViewing && courses.length > 0 && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-border animate-slide-up mb-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">Available Swayam Courses</h2>
-                  <Button onClick={handleSubmit} className="flex items-center gap-2">
+                  {/* <Button onClick={handleSubmit} className="flex items-center gap-2">
                     Upload Courses
-                  </Button>
+                  </Button> */}
                 </div>
                 <div className="overflow-auto">
                   <Table>
@@ -327,19 +348,20 @@ const SwayamCourseApprovals = () => {
                         <TableHead>Name</TableHead>
                         <TableHead>Provider</TableHead>
                         <TableHead>Duration</TableHead>
-                        <TableHead>Credits</TableHead>
                         <TableHead>Start Date</TableHead>
+                        <TableHead>End Date</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {courses.map((course) => (
                         <TableRow key={course.id}>
                           <TableCell className="font-medium">{course.id}</TableCell>
-                          <TableCell>{course.name}</TableCell>
-                          <TableCell>{course.provider}</TableCell>
+                          <TableCell>{course.course_name}</TableCell>
+                          <TableCell>{course.sme_Name}</TableCell>
                           <TableCell>{course.duration}</TableCell>
-                          <TableCell>{course.credits}</TableCell>
+                          {/* <TableCell>{new Date(course.StartDate).toLocaleDateString()}</TableCell> */}
                           <TableCell>{new Date(course.startDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{new Date(course.endDate).toLocaleDateString()}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -347,6 +369,11 @@ const SwayamCourseApprovals = () => {
                 </div>
               </div>
             )}
+            </>
+          )
+          // </TabsContent>
+          }
+
           </TabsContent>
 
           {/* Course Logs Tab */}

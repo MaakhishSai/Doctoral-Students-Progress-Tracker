@@ -59,6 +59,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/students/all").permitAll()
                 .requestMatchers("/api/courses/all").permitAll()
                 .requestMatchers("/api/courses/upload").permitAll()
+                .requestMatchers("/api/results/upload").permitAll()
+                .requestMatchers("/api/results/all").permitAll()
                  .anyRequest().authenticated()
             )
             .formLogin(form -> form.disable())

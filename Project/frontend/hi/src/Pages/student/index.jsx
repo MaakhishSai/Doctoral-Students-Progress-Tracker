@@ -26,7 +26,6 @@ import axios from 'axios';
 
 // Mock data - Unchanged fields
 const mockProfileData = {
-  rollNumber: "P220780CS",
   orcid: "0000-0001-2345-6789",
   avatarUrl: "/placeholder.svg"
 };
@@ -78,10 +77,11 @@ const Index = () => {
         });
 
         // Check if response has data
-        if (response.data && response.data.name && response.data.email) {
+        if (response.data && response.data.name && response.data.rollNumber && response.data.email) {
           setProfileData(prevData => ({
             ...prevData,
             name: response.data.name,
+            rollNumber: response.data.rollNumber,
             email: response.data.email
           }));
         } else {

@@ -1,7 +1,9 @@
 package com.demo.rbac.OAuthRelated;
 
+import com.demo.rbac.model.Guide;
+import com.demo.rbac.model.Student;
 import com.demo.rbac.model.User;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,11 +13,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-@AllArgsConstructor
+
 public class CustomUserDetails implements UserDetails, OAuth2User {
 
-    private User user;
+    private Student student;
     private Map<String, Object> attributes;
+    private Guide guide;
+
+    public CustomUserDetails(Guide guide, Map<String, Object> attributes) {
+        this.attributes = attributes;
+        this.guide = guide;
+    }
+
+    public CustomUserDetails(Student student, Map<String, Object> attributes) {
+        this.student = student;
+        this.attributes = attributes;
+    }
 
     @Override
     public Map<String, Object> getAttributes() {
@@ -26,8 +39,15 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
     public Collection<? extends GrantedAuthority> getAuthorities(){
 //        System.out.println("are we entering here");
         // these authorities are used by UserService
-        System.out.println(user.getUserRole().name());
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getUserRole().name()));
+        if (student != null) {
+            System.out.println(student.getUserRole().name());
+            return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + student.getUserRole().name()));
+        }
+        if (guide != null) {
+            System.out.println(guide.getUserRole().name());
+            return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + guide.getUserRole().name()));
+        }
+        throw new IllegalStateException("UserDetails not properly initialized");
     }
 
     @Override
@@ -37,7 +57,13 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        if (student != null) {
+            return student.getEmail();
+        }
+        if (guide != null) {
+            return guide.getEmail();
+        }
+        throw new IllegalStateException("UserDetails not properly initialized");
     }
 
     @Override
@@ -56,20 +82,34 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
     }
 
     @Override
-    public boolean isEnabled() {
-        return user.isEnabled();
-    }
-
-    @Override
     public String getName(){
-        return user.getEmail();
+        if (student != null) {
+            return student.getEmail();
+        }
+        if (guide != null) {
+            return guide.getEmail();
+        }
+        throw new IllegalStateException("UserDetails not properly initialized");
     }
 
     public UserDetails withAttributes(Map<String, Object> attributes){
-        return new CustomUserDetails(this.user, attributes);
+        if (this.student != null) {
+            return new CustomUserDetails(this.student, attributes);
+        }
+        else if (this.guide != null) {
+            return new CustomUserDetails(this.guide, attributes);
+        }
+        throw new IllegalStateException("No user entity available");
     }
 
     public User getUser() {
-        return user;
+        if (student != null) {
+            return student;
+        }
+        if (guide != null) {
+            return guide;
+        }
+        throw new IllegalStateException("UserDetails not properly initialized");
+
     }
 }

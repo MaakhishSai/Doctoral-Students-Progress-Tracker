@@ -31,7 +31,7 @@ const Profileg = () => {
     const fetchGuideData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/api/user/profile', {
+        const response = await axios.get('http://localhost:8080/api/user/super', {
           withCredentials: true
         });
 

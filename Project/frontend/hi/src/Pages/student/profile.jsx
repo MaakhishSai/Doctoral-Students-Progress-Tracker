@@ -8,13 +8,12 @@ import axios from 'axios';
 // Mock student data - keep other fields unchanged
 const mockStudentData = {
   profilePicture: '/placeholder.svg',
-  rollNumber: 'P220545CS',
-  orcidId: '0000-0002-1825-0097',
+  orcidId: '0000-0002-1825-0097', // This is just a placeholder
   degree: 'PhD',
   department: 'CSED',
   dateOfJoining: 'August 15, 2022',
-  admissionScheme: 'JRF',
-  researchArea: 'Machine Learning and Artificial Intelligence for Healthcare Systems'
+  admissionScheme: '',
+  researchArea: '' // Initially blank so that student can update it
 };
 
 // Mock DC data - remains unchanged
@@ -44,13 +43,20 @@ const Profile = () => {
           withCredentials: true
         });
 
-        // Update only name and email in the student data
-        setStudent(prevStudent => ({
-          ...prevStudent,
-          name: response.data.name,
-          email: response.data.email
-        }));
-
+        // Ensure required keys are available from the response
+        if (response.data && response.data.name && response.data.email && response.data.rollNumber) {
+          setStudent(prevStudent => ({
+            ...prevStudent,
+            name: response.data.name,
+            email: response.data.email,
+            rollNumber: response.data.rollNumber,
+            // Map backend keys to local keys expected by StudentInfoCard:
+            orcidId: response.data.orcid,
+            researchArea: response.data.areaofresearch || ""
+          }));
+        } else {
+          throw new Error('Invalid response format');
+        }
       } catch (error) {
         console.error("Error fetching profile data:", error);
       }

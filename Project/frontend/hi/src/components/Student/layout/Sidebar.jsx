@@ -7,7 +7,7 @@ const navItems = [
   { label: "Profile", href: "/profile", icon: User },
   { label: "DC Meetings", href: "/dcmeeting", icon: Calendar },
   { label: "Comprehensive Exam", href: "/exam", icon: FileText },
-  { label: "Paper Publications", href: "/publication", icon: Book },
+  { label: "Publications", href: "/publication", icon: Book },
   { label: "SWAYAM Courses", href: "/swayam_course", icon: GraduationCap },
   // { label: "Notifications", href: "/notification", icon: Bell },
 ];

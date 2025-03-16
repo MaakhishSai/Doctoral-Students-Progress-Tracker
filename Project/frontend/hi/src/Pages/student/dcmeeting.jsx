@@ -1,4 +1,4 @@
-import React,{ useState } from 'react';
+import React,{ useState,useEffect } from 'react';
 import Layout from '@/components/Student/layout/Layout';
 import { 
   Card,
@@ -70,7 +70,12 @@ const DCMeetings = () => {
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [isNewMeetingOpen, setIsNewMeetingOpen] = useState(false);
   const [isResubmitOpen, setIsResubmitOpen] = useState(false);
-
+  const [student, setStudent] = useState({});
+  const [profileData, setProfileData] = useState({
+      orcid: "",
+      ResearchArea: "",
+      avatarUrl: "/placeholder.svg"
+    });
   const filteredMeetings = meetings
     .filter(meeting => meeting.status === activeTab)
     .filter(meeting => searchQuery === '' || meeting.date.includes(searchQuery));
@@ -120,6 +125,37 @@ const DCMeetings = () => {
     };
     return <Badge variant="outline" className={badgeStyles[status]}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
   };
+
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/user/profile', {
+          withCredentials: true
+        });
+
+        // Ensure required keys are available from the response
+        if (response.data && response.data.name && response.data.email && response.data.rollNumber) {
+          setStudent(prevStudent => ({
+            ...prevStudent,
+            name: response.data.name,
+            email: response.data.email,
+            rollNumber: response.data.rollNumber,
+            // Map backend keys to local keys expected by StudentInfoCard:
+            orcidId: response.data.orcid,
+            researchArea: response.data.areaofresearch || ""
+          }));
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+  
   
   return (
     <Layout>

@@ -24,12 +24,6 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
-// Mock data - Unchanged fields
-const mockProfileData = {
-  orcid: "0000-0001-2345-6789",
-  avatarUrl: "/placeholder.svg"
-};
-
 const upcomingMeetings = [
   {
     id: 1,
@@ -63,11 +57,19 @@ const recentPublications = [
 ];
 
 const Index = () => {
-  const [profileData, setProfileData] = useState(mockProfileData);
+  // Initially set with minimal mock data.
+  const [profileData, setProfileData] = useState({
+    orcid: "",
+    ResearchArea: "",
+    avatarUrl: "/placeholder.svg"
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [orcidInput, setOrcidInput] = useState("");  
+  const [researchInput, setResearchInput] = useState("");
   const navigate = useNavigate();
 
+  // Fetch profile from backend
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -76,14 +78,19 @@ const Index = () => {
           withCredentials: true
         });
 
-        // Check if response has data
-        if (response.data && response.data.name && response.data.rollNumber && response.data.email) {
+        // Ensure required keys are available
+        if (response.data && response.data.name && response.data.email && response.data.rollNumber) {
           setProfileData(prevData => ({
             ...prevData,
             name: response.data.name,
+            email: response.data.email,
             rollNumber: response.data.rollNumber,
-            email: response.data.email
+            orcid: response.data.orcid,         // from backend response
+            areaofresearch: response.data.areaofresearch || ""  // note the capital "R" here per your backend
           }));
+          // Pre-fill local state if data is present
+          setOrcidInput(response.data.orcid || "");
+          setResearchInput(response.data.areaofresearch || "");
         } else {
           throw new Error('Invalid response format');
         }
@@ -98,17 +105,77 @@ const Index = () => {
     fetchProfileData();
   }, []);
 
+  // Handler for saving ORCID and Research Area
+  const handleProfileUpdate = async () => {
+    try {
+      // Update endpoint expects the keys "orcid" and "areaofresearch"
+      const payload = {
+        email: profileData.email,
+        orcid: orcidInput,
+        areaofresearch: researchInput
+      };
+
+      await axios.put('http://localhost:8080/api/user/update-profile', payload, { withCredentials: true });
+      
+      // Update local state once backend update is successful.
+      setProfileData(prev => ({
+        ...prev,
+        orcid: orcidInput,
+        areaofresearch: researchInput
+      }));
+
+      // Optionally, show a success notification here.
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
   return (
-    <Layout>
+    <Layout >
       <div className="space-y-6">
+        {/* Display ProfileCard with current profileData */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <ProfileCard profileData={profileData} />
+            {/* If ORCID or Research Area is missing, show input fields inline */}
+            {(!profileData.orcid || !profileData.areaofresearch) && (
+              <div className="mt-6 p-4 border border-dashed border-gray-300 rounded-lg">
+                <h2 className="text-xl font-semibold mb-2">Complete Your Profile</h2>
+                {!profileData.orcid && (
+                  <div className="mb-4">
+                    <label className="text-sm font-medium text-muted-foreground">ORCID:</label>
+                    <input
+                      type="text"
+                      placeholder="Enter your ORCID"
+                      className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-black-500 focus:border-black-500"
+                      value={orcidInput}
+                      onChange={(e) => setOrcidInput(e.target.value)}
+                    />
+                  </div>
+                )}
+                {!profileData.areaofresearch && (
+                  <div className="mb-4">
+                    <label className="block text-sm mb-1">Research Area:</label>
+                    <textarea
+                      placeholder="Enter your Research Area"
+                      className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-black-500 focus:border-black-500"
+                      value={researchInput}
+                      onChange={(e) => setResearchInput(e.target.value)}
+                    />
+                  </div>
+                )}
+                <Button onClick={handleProfileUpdate} className="mt-2">
+                  Save Profile Details
+                </Button>
+              </div>
+            )}
           </div>
-          
+
           <div className="space-y-6">
             <StatsCard
               title="Publications"
@@ -120,11 +187,10 @@ const Index = () => {
               title="DC Meetings"
               description="Next meeting on Nov 15"
               icon={<Calendar className="h-6 w-6" />}
-            
             />
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <Card className="card-transition">
@@ -223,7 +289,7 @@ const Index = () => {
                 )}
               </CardContent>
               <CardFooter className="pt-1">
-                <Button variant="ghost" size="sm" className="w-full justify-between" onClick ={()=>navigate("/publication")}>
+                <Button variant="ghost" size="sm" className="w-full justify-between" onClick={()=>navigate("/publication")}>
                   <span>View all publications</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -232,8 +298,6 @@ const Index = () => {
           </div>
           
           <div className="space-y-6">       
-
-            
             <Card className="card-transition">
               <CardHeader className="pb-3">
                 <CardTitle>Quick Actions</CardTitle>

@@ -228,6 +228,23 @@ const AddPublication = () => {
                     <SelectContent>
                       <SelectItem value="Q1">Q1</SelectItem>
                       <SelectItem value="Q2">Q2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="publicationType" className="font-medium">
+                    Quartiles <span className="text-destructive">*</span>
+                  </Label>
+                  <Select 
+                    value={formData.publicationType} 
+                    onValueChange={(value) => handleSelectChange('publicationType', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select publication type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Q1">Q1</SelectItem>
+                      <SelectItem value="Q2">Q2</SelectItem>
                       <SelectItem value="Q3">Q3</SelectItem>
                       <SelectItem value="Q4">Q4</SelectItem>
                     </SelectContent>

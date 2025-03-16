@@ -62,12 +62,13 @@ const Header = ({ studentName }) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg" alt={studentName} />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {studentName.split(" ").map(n => n[0]).join("")}
-                  </AvatarFallback>
-                </Avatar>
+              <Avatar className="h-8 w-8">
+  <AvatarImage src="/placeholder.svg" alt={studentName || "Student"} />
+  <AvatarFallback className="bg-primary text-primary-foreground">
+    {studentName ? studentName.split(" ").map(n => n[0]).join("") : "S"}
+  </AvatarFallback>
+</Avatar>
+
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

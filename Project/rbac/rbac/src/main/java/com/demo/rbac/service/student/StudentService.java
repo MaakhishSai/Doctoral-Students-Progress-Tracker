@@ -49,7 +49,7 @@ public class StudentService {
                     });
 
                     // Ensure the name is always updated
-                    if (!existingGuide.isEmpty() && tempGuide.getName() != null) {
+                    if (existingGuide.isPresent() && tempGuide.getName() != null) {
                         savedGuide.setName(tempGuide.getName());
                         guideRepository.save(savedGuide);
                     }
@@ -78,7 +78,7 @@ public class StudentService {
         return studentRepository.findByEmail(email);
     }
 
-    public Student saveStudent(Student student){
+    public Student saveStudent(Student student) {
         return studentRepository.save(student);
     }
 
@@ -86,7 +86,11 @@ public class StudentService {
         return studentRepository.findById(rollNumber);
     }
 
-    // ✅ NEW METHOD: Update student details
+    // ✅ NEW METHOD: Fetch student by username
+    // public Optional<Student> getStudentByUsername(String username) {
+    //     return studentRepository.findByUsername(username);
+    // }
+
     public Student updateStudent(Student student) {
         return studentRepository.save(student); // Save updated student details
     }

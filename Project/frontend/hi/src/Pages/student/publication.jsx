@@ -1,104 +1,98 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Layout from '@/components/Student/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Search, FileText } from 'lucide-react';
-import PublicationList from '@/components/Student/publications/PublicationList';
-
-const samplePublications = [
-  {
-    id: 1,
-    title: "Deep Learning Approaches for Natural Language Processing in Healthcare",
-    journal: "IEEE Transactions on Medical Imaging",
-    doi: "http://dx.doi.org/10.1093/ajae/aaq063",
-    publicationType: "Q1",
-    authors: ["John Doe", "Jane Smith", "Robert Johnson"],
-    status: "Published",
-    statusHistory: [
-      { status: "Submitted", date: "2024-01-15" },
-      { status: "Editorial Revision", date: "2024-02-20" },
-      { status: "Accepted", date: "2024-03-10" },
-      { status: "Published", date: "2024-04-05" }
-    ],
-    createdAt: "2024-01-15"
-  },
-  {
-    id: 2,
-    title: "Machine Learning Algorithms for Predictive Analysis in Engineering",
-    journal: "Journal of Machine Learning Research",
-    doi: "http://dx.doi.org/10.1011/ajae/aaq063",
-    publicationType: "Q2",
-    authors: ["Jane Smith", "Michael Brown"],
-    status: "Accepted",
-    statusHistory: [
-      { status: "Submitted", date: "2024-03-22" },
-      { status: "Editorial Revision", date: "2024-04-15" },
-      { status: "Accepted", date: "2024-05-10" }
-    ],
-    createdAt: "2024-03-22"
-  },
-  {
-    id: 3,
-    title: "Novel Approaches to Quantum Computing Algorithms",
-    journal: "Physical Review Letters",
-    doi: "http://dx.doi.org/10.1093/a11/aaq063",
-    publicationType: "Q1",
-    authors: ["Robert Johnson", "Emily Davis", "David Wilson"],
-    status: "Editorial Revision",
-    statusHistory: [
-      { status: "Submitted", date: "2024-05-30" },
-      { status: "Editorial Revision", date: "2024-06-25" }
-    ],
-    createdAt: "2024-05-30"
-  },
-  {
-    id: 4,
-    title: "Sustainable Energy Sources: A Systematic Review",
-    journal: "Renewable and Sustainable Energy Reviews",
-    doi: "http://dx.doi.org/10.1093/ajae/aaq06311",
-    publicationType: "Q3",
-    authors: ["Emily Davis", "Thomas Anderson"],
-    status: "Submitted",
-    statusHistory: [
-      { status: "Submitted", date: "2024-07-12" }
-    ],
-    createdAt: "2024-07-12"
-  }
-];
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Layout from "@/components/Student/layout/Layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, Search, FileText } from "lucide-react";
+import PublicationList from "@/components/Student/publications/PublicationList";
+import { useToast } from "@/hooks/use-toast";
+import axios from "axios"; // Ensure axios is imported
 
 const Publications = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [publications, setPublications] = useState(samplePublications);
-  const [filteredPublications, setFilteredPublications] = useState(samplePublications);
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [publications, setPublications] = useState([]);
+  const [filteredPublications, setFilteredPublications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [student, setStudent] = useState(null); // Initialize student state
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get("http://localhost:8080/api/user/profile", {
+          withCredentials: true,
+        });
+
+        if (response.data && response.data.name && response.data.email && response.data.rollNumber) {
+          setStudent({
+            name: response.data.name,
+            email: response.data.email,
+            rollNumber: response.data.rollNumber,
+            orcidId: response.data.orcid || "",
+            researchArea: response.data.areaofresearch || "",
+          });
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+        toast({
+          title: "Error",
+          description: "Could not fetch profile data.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []); // Only fetch profile data once when the component mounts
+
+  useEffect(() => {
+    if (student) {
+      // If student data is available, fetch their publications
+      fetchPublications(student.rollNumber);
+    }
+  }, [student]); // Fetch publications when student data is available
+
+  const fetchPublications = async (rollNo) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/publications/get/${rollNo}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch publications");
+
+      const data = await response.json();
+      setPublications(data);
+      setFilteredPublications(data);
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      toast({
+        title: "Error",
+        description: "Could not fetch publications.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase();
     setSearchTerm(searchValue);
-    if (searchValue === '') {
-      setFilteredPublications(publications);
-    } else {
-      const filtered = publications.filter(pub => pub.title.toLowerCase().includes(searchValue));
-      setFilteredPublications(filtered);
-    }
+    setFilteredPublications(
+      searchValue
+        ? publications.filter((pub) => pub.title.toLowerCase().includes(searchValue))
+        : publications
+    );
   };
 
   const handleAddNewPublication = () => {
-    navigate('/addpublication');
-  };
-
-  const handleUpdateStatus = (id, newStatus) => {
-    const updatedPublications = publications.map(pub => {
-      if (pub.id === id) {
-        const newStatusHistory = [...pub.statusHistory, { status: newStatus, date: new Date().toISOString() }];
-        return { ...pub, status: newStatus, statusHistory: newStatusHistory };
-      }
-      return pub;
-    });
-    setPublications(updatedPublications);
-    setFilteredPublications(updatedPublications);
+    navigate("/addpublication");
   };
 
   return (
@@ -125,8 +119,9 @@ const Publications = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <PublicationList publications={filteredPublications} onUpdateStatus={handleUpdateStatus} />
-            {filteredPublications.length === 0 && (
+            {loading ? (
+              <p className="text-center">Loading publications...</p>
+            ) : filteredPublications.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md border-dashed border-muted">
                 <FileText className="w-10 h-10 text-muted-foreground mb-2" />
                 <h3 className="text-lg font-medium">No publications found</h3>
@@ -136,6 +131,8 @@ const Publications = () => {
                   Add Publication
                 </Button>
               </div>
+            ) : (
+              <PublicationList publications={filteredPublications} />
             )}
           </CardContent>
         </Card>

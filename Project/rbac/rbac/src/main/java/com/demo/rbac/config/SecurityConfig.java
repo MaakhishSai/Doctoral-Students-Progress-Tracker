@@ -69,6 +69,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/courses/upload").permitAll()
                         .requestMatchers("/api/results/upload").permitAll()
                         .requestMatchers("/api/results/all").permitAll()
+                        .requestMatchers("/api/publications/get").permitAll()
+                        .requestMatchers("/api/publications/**").permitAll()
+                        
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

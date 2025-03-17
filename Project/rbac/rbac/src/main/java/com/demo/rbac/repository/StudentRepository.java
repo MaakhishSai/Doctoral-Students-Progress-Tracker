@@ -26,7 +26,7 @@ public interface StudentRepository extends JpaRepository<Student, String> {
            "WHERE s.guide.id = :guideId " +
            "GROUP BY s.roll, s.name, s.orcid")
     List<Object[]> findStudentsByGuideWithPublicationCount(@Param("guideId") Long guideId);
-    
+    List<Student> findByGuide_Email(String email);
     // ✅ Find student by roll number
     @Query("SELECT s FROM Student s WHERE s.roll = :roll")
     Optional<Student> findByRollNo(@Param("roll") String roll);

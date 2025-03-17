@@ -1,8 +1,8 @@
-package com.demo.rbac.controller;
+package com.demo.rbac.controller.publications;
 
 import com.demo.rbac.dto.PublicationRequest;
 import com.demo.rbac.model.Publication;
-import com.demo.rbac.service.PublicationService;
+import com.demo.rbac.service.publications.PublicationService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

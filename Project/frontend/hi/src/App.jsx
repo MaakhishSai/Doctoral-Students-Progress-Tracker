@@ -47,7 +47,7 @@ export default function App() {
         <Route path="/meetingsapprovals" element={<MeetingApprovals />} />  
         <Route path="/publicationsg" element={<Publicationsg />} />  
         <Route path="/coursesg" element={<Actions />} />  
-        <Route path="/student/:id" element={<StudentPublications />} />
+        <Route path="/student/:rollNumber" element={<StudentPublications />} />
         <Route path="/Cocourses" element={<CourseExcel />} />
         <Route path="/scholarprofiles" element={<ScholarProfiless />} />
         <Route path="/exam" element={<Exam />} />

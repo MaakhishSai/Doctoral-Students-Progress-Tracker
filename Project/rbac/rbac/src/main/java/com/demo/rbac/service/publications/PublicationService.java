@@ -1,4 +1,4 @@
-package com.demo.rbac.service;
+package com.demo.rbac.service.publications;
 
 import com.demo.rbac.dto.PublicationRequest;
 import com.demo.rbac.model.Publication;
@@ -16,6 +16,7 @@ public class PublicationService {
     public PublicationService(PublicationRepository publicationRepository) {
         this.publicationRepository = publicationRepository;
     }
+    
 
     // ✅ Save or update a publication
     public Publication savePublication(Publication publication) {
@@ -59,8 +60,10 @@ public class PublicationService {
         publication.setQuartile(request.getQuartile());
         publication.setStatus(request.getStatus());
         publication.setSendCopyToCoordinator(request.isSendCopyToCoordinator());
-        publication.setRollNo(request.getRollNo());  // Set roll number directly
-
+        publication.setRollNo(request.getRollNo());
+        publication.setDateOfSubmission(request.getDateOfSubmission()); // ✅ Set dateOfSubmission
+    
         return publicationRepository.save(publication);
     }
+    
 }

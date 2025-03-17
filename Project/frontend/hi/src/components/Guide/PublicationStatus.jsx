@@ -3,23 +3,23 @@ const PublicationStatus = ({ status, className }) => {
       switch (status) {
         case 'Published':
           return {
-            bg: 'bg-green-100', // Light green background
-            text: 'text-green-800', // Dark green text
+            bg: 'bg-blue-500', // Light green background
+            text: 'text-white', // Dark green text
           };
-        case 'Editorial Revised':
+        case 'Editorial Revision':
           return {
-            bg: 'bg-yellow-100', // Light yellow background
-            text: 'text-yellow-800', // Dark yellow text
+            bg: 'bg-yellow-500', // Light yellow background
+            text: 'text-white', // Dark yellow text
           };
         case 'Submitted':
           return {
-            bg: 'bg-blue-100', // Light blue background
-            text: 'text-blue-800', // Dark blue text
+            bg: 'bg-gray-500', // Light blue background
+            text: 'text-white', // Dark blue text
           };
         default:
           return {
-            bg: 'bg-gray-100',
-            text: 'text-gray-700',
+            bg: 'bg-green-500',
+            text: 'text-white',
           };
       }
     };

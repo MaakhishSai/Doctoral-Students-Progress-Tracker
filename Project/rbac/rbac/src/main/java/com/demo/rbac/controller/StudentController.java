@@ -1,6 +1,7 @@
 package com.demo.rbac.controller;
 
 import com.demo.rbac.dto.StudentGuideDTO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import com.demo.rbac.service.student.StudentService;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
-
+// import com.demo.rbac.dto.StudentPublicationDTO;
 @RestController
 @RequestMapping("/api/students")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -31,6 +32,17 @@ public class StudentController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+//     @GetMapping("/publications")
+// public ResponseEntity<List<StudentPublicationDTO>> getStudentsWithPublications() {
+//     List<StudentPublicationDTO> students = studentService.getStudentsWithPublications();
+//     return ResponseEntity.ok(students);
+// }
+
+@GetMapping("/{rollNumber}/publications")
+public ResponseEntity<Integer> getPublicationCount(@PathVariable String rollNumber) {
+    int count = studentService.getPublicationCountForStudent(rollNumber);
+    return ResponseEntity.ok(count);
+}
 
     @GetMapping("/all")
     public ResponseEntity<List<StudentGuideDTO>> getAllStudents() {

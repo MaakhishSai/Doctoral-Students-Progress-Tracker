@@ -2,6 +2,7 @@ package com.demo.rbac.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "publications")
@@ -23,7 +24,10 @@ public class Publication {
     private String status;
     private boolean sendCopyToCoordinator;
     private String quartile;
-    
+
     @Column(name = "roll_no", nullable = false) // ✅ Store only a single roll number
-    private String rollNo;  
+    private String rollNo;
+
+    @Column(name = "date_of_submission")
+    private LocalDate dateOfSubmission; // ✅ New field for submission date
 }

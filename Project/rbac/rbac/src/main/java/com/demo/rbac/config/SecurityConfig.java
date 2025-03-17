@@ -71,6 +71,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/results/all").permitAll()
                         .requestMatchers("/api/publications/get").permitAll()
                         .requestMatchers("/api/publications/**").permitAll()
+                        .requestMatchers("/api/guides/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         
                         .anyRequest().authenticated()
                 )

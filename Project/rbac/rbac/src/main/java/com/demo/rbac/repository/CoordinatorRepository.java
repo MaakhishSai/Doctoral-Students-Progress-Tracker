@@ -1,7 +1,6 @@
 package com.demo.rbac.repository;
 
 import com.demo.rbac.model.Coordinator;
-import com.demo.rbac.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

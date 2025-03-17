@@ -54,8 +54,9 @@ const AddPublication = () => {
     quartile: 'q1',
     status: 'Submitted',
     sendCopyToCoordinator: false,
+    dateOfSubmission: new Date().toISOString().split('T')[0],
   });
-
+console.log(formData);
   const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
@@ -77,6 +78,9 @@ const AddPublication = () => {
   const handleSwitchChange = (checked) => {
     setFormData(prev => ({ ...prev, sendCopyToCoordinator: checked }));
   };
+  const handleBack = () => {
+    navigate('/publication');
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -95,38 +99,42 @@ const AddPublication = () => {
     e.preventDefault();
     if (!validateForm()) return;
     setLoading(true);
-
+  
     try {
-      const payload = { ...formData, rollNo }; // Include roll number in the request
-
-      const response = await fetch('http://localhost:8080/api/publications/add', {
-        method: 'POST',
+      const payload = { ...formData, rollNo };
+      const response = await axios.post('http://localhost:8080/api/publications/add', payload, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
+  
+      if (response.status >= 200 && response.status < 300) {  // Success range
+        toast({ title: "Success", description: "Publication added successfully!", variant: "default" });
+  
+        // Redirect after a small delay to allow the toast to be seen
+        setTimeout(() => {
+          navigate('/publication');
+        }, 500); // 500ms delay before redirecting
+      } else {
         throw new Error('Failed to add publication');
       }
-
-      toast({
-        title: "Success",
-        description: "Publication added successfully!",
-        variant: "default"
-      });
-
-      navigate('/publication');
-
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save publication. Please try again.",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Failed to save publication. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
+  const handleReset = () => {
+    setFormData({
+      title: '',
+      journal: '',
+      doi: '',
+      publicationType: 'Q1',
+      authors: [''],
+      status: 'Submitted',
+      sendCopyToCoordinator: false
+    });
+    setErrors({});
+  };
+  
 
   return (
     <Layout>
@@ -189,14 +197,23 @@ const AddPublication = () => {
                 </SelectContent>
               </Select>
 
-              <Label>Send Copy to Coordinator</Label>
-              <Switch checked={formData.sendCopyToCoordinator} onCheckedChange={handleSwitchChange} />
+              {/* <Label>Send Copy to Coordinator</Label> */}
+              {/* <Switch checked={formData.sendCopyToCoordinator} onCheckedChange={handleSwitchChange} /> */}
 
-              <CardFooter className="flex justify-end">
+              <CardFooter className="flex justify-between border-t pt-6">
+              <Button variant="outline" onClick={handleReset} className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Reset
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleBack}>
+                Cancel
+              </Button>
                 <Button disabled={loading} type="submit">
                   {loading ? <RotateCcw className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                   {loading ? "Submitting..." : "Submit"}
                 </Button>
+                </div>
               </CardFooter>
             </form>
           </CardContent>

@@ -1,8 +1,7 @@
-
-import React, { ReactNode } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import { useState, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
 import axios from 'axios'; // Don't forget to import axios
 
 const PageLayout = ({ children }) => {

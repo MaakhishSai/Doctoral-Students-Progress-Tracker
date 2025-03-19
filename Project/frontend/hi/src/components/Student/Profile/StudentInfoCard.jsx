@@ -22,6 +22,7 @@ const StudentInfoCard = ({ studentData, onUpdate }) => {
         const response = await axios.get(`http://localhost:8080/api/students/${studentData.rollNumber}`, {
           withCredentials: true
         });
+        console.log(response.data);
 
         if (response.data) {
           const { orcid, areaofresearch, admissionscheme } = response.data;
@@ -73,7 +74,7 @@ const StudentInfoCard = ({ studentData, onUpdate }) => {
             <AvatarImage src={profileImage} alt={studentData.name} />
             <AvatarFallback><User className="h-12 w-12" /></AvatarFallback>
           </Avatar>
-          <span className="text-sm text-muted-foreground">Profile Picture</span>
+          <span className="text-sm text-muted-foreground">{studentData.name}</span>
         </div>
         
         <div className="lg:col-span-2 space-y-4">

@@ -51,12 +51,12 @@ import {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-gray-500">Credits:</span>
-                <span className="text-sm text-gray-900">{request.credits}</span>
+                <span className="text-sm text-gray-900">{request.Duration}</span>
               </div>
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span className="text-sm font-medium text-gray-500">Applied Date:</span>
                 <span className="text-sm text-gray-900">{request.appliedDate}</span>
-              </div>
+              </div> */}
             </div>
           </div>
           

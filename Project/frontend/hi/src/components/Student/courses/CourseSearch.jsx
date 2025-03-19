@@ -1,45 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Plus } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-// import { Course } from '@/types/courses';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Search, Plus, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
-// Mock course suggestions
-const COURSE_SUGGESTIONS = [
-  { id: 'AI201', name: 'Artificial Intelligence', credits: 4 },
-  { id: 'ML301', name: 'Machine Learning', credits: 3 },
-  { id: 'DL401', name: 'Deep Learning', credits: 3 },
-  { id: 'NLP501', name: 'Natural Language Processing', credits: 4 },
-  { id: 'DS201', name: 'Data Structures', credits: 3 },
-  { id: 'ALG301', name: 'Algorithms', credits: 4 },
-  { id: 'DB401', name: 'Database Systems', credits: 3 },
-];
-
-
-
-const CourseSearch= ({ onAddCourse }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
+const CourseSearch = ({ onAddCourse }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [allCourses, setAllCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get("/api/courses/all"); // Update API endpoint if needed
+        console.log("Fetched Courses:", response.data);
+        setAllCourses(response.data);
+        setFilteredCourses(response.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   useEffect(() => {
     if (searchTerm.length > 0) {
-      const filteredSuggestions = COURSE_SUGGESTIONS.filter(course => 
-        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.id.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = allCourses.filter(
+        (course) =>
+          course.course_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          course.id.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setSuggestions(filteredSuggestions);
-      setShowSuggestions(true);
+      setFilteredCourses(filtered);
     } else {
-      setSuggestions(COURSE_SUGGESTIONS);
-      setShowSuggestions(true);
+      setFilteredCourses(allCourses);
     }
-  }, [searchTerm]);
+    setShowSuggestions(true);
+  }, [searchTerm, allCourses]);
 
   const handleSelectCourse = (course) => {
     onAddCourse(course);
-    setSearchTerm('');
+    setSearchTerm("");
+    // setShowSuggestions(false);
+  };
+
+  const handleViewDetails = (course) => {
+    setSelectedCourse(course);
   };
 
   return (
@@ -55,49 +65,74 @@ const CourseSearch= ({ onAddCourse }) => {
           />
           <Search className="absolute left-3 top-[30%] transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
-        <Button 
+        <Button
           onClick={() => {
-            if (suggestions.length > 0) {
-              handleSelectCourse(suggestions[0]);
+            if (filteredCourses.length > 0) {
+              handleSelectCourse(filteredCourses[0]);
             }
           }}
-          disabled={!(suggestions.length > 0)}
+          disabled={filteredCourses.length === 0}
           className="flex items-center gap-1"
         >
           <Plus size={16} />
           Add
         </Button>
       </div>
-      
+
       {showSuggestions && (
         <div className="border rounded-md overflow-hidden">
-          {suggestions.length > 0 ? (
+          {filteredCourses.length > 0 ? (
             <div className="max-h-[300px] overflow-y-auto">
-              {suggestions.map((course) => (
-                <div 
+              {filteredCourses.map((course) => (
+                <div
                   key={course.id}
                   className="px-4 py-3 hover:bg-muted cursor-pointer flex justify-between items-center border-b last:border-0"
-                  onClick={() => handleSelectCourse(course)}
                 >
                   <div>
-                    <div className="font-medium">{course.name}</div>
+                    <div className="font-medium">{course.course_name}</div>
                     <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
                       <Badge variant="outline">{course.id}</Badge>
-                      <span>{course.credits} credits</span>
+                      <span>{course.duration}</span>
+                      <Button variant="outline" size="sm" onClick={() => handleViewDetails(course)}>
+                        Details
+                      </Button>
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => handleSelectCourse(course)}>
                     <Plus size={16} className="text-primary" />
                   </Button>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center text-muted-foreground">
-              No courses found matching your search.
-            </div>
+            <div className="py-8 text-center text-muted-foreground">No courses found matching your search.</div>
           )}
         </div>
+      )}
+
+      {/* Dialog Box for Course Details */}
+      {selectedCourse && (
+        <Dialog open={!!selectedCourse} onOpenChange={() => setSelectedCourse(null)}>
+          <DialogContent className="max-w-lg p-6">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold">{selectedCourse.course_name}</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3 text-sm text-gray-700">
+              <p><strong>Course ID:</strong> {selectedCourse.id}</p>
+              <p><strong>Duration:</strong> {selectedCourse.duration}</p>
+              <p><strong>Start Date:</strong> {selectedCourse.startDate}</p>
+              <p><strong>End Date:</strong> {selectedCourse.endDate}</p>
+              <p><strong>Provider:</strong> {selectedCourse.sme_Name}</p>
+              <p><strong>Institute:</strong> {selectedCourse.institute}</p>
+              <p><strong>Co-Institute:</strong> {selectedCourse.co_Institute}</p>
+            </div>
+
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setSelectedCourse(null)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

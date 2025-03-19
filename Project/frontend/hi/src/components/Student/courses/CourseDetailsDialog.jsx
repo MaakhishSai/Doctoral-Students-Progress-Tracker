@@ -16,7 +16,7 @@ const CourseDetailsDialog = ({ isOpen, onClose, course }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>{course.name}</DialogTitle>
+          <DialogTitle>{course.course_name}</DialogTitle>
           <DialogDescription className="flex items-center gap-2">
             <Badge variant="outline">{course.id}</Badge>
             <span>{course.credits} credits</span>

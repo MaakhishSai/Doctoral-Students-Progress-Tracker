@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Minus, Save, Mail } from 'lucide-react';
+import { Plus, Minus, Save, Mail, Edit } from 'lucide-react';
 
 const isValidEmail = (email) => {
   // Simple regex for email validation
@@ -15,6 +15,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
     supervisor: { ...dcData.supervisor },
     members: [...dcData.members],
   });
+  const [isEditing, setIsEditing] = useState(false);
 
   // Update local state when dcData prop changes.
   useEffect(() => {
@@ -68,11 +69,12 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
     }
     for (let member of editableData.members) {
       if (!isValidEmail(member.email)) {
-        alert("Please enter a valid email address for all committee members.");
+        alert("Please enter a valid email address for all DC members.");
         return;
       }
     }
     onUpdate(editableData);
+    setIsEditing(false);
   };
 
   return (
@@ -91,7 +93,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
                 value={editableData.chair.name}
                 placeholder="Name"
                 onChange={(e) => handlePersonChange('chair', 'name', e.target.value)}
-                disabled={readOnly}
+                disabled={readOnly || !isEditing}
               />
             </div>
             <div className="space-y-2">
@@ -106,7 +108,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
                       alert("Please enter a valid email address for DC Chair.");
                     }
                   }}
-                  disabled={readOnly}
+                  disabled={readOnly || !isEditing}
                 />
                 {editableData.chair.email && (
                   <a
@@ -129,8 +131,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
               <Input
                 value={editableData.supervisor.name}
                 placeholder="Name"
-                onChange={(e) => handlePersonChange('supervisor', 'name', e.target.value)}
-                disabled={readOnly}
+                disabled={true}
               />
             </div>
             <div className="space-y-2">
@@ -139,13 +140,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
                 <Input
                   value={editableData.supervisor.email}
                   placeholder="Email"
-                  onChange={(e) => handlePersonChange('supervisor', 'email', e.target.value)}
-                  onBlur={(e) => {
-                    if (!isValidEmail(e.target.value)) {
-                      alert("Please enter a valid email address for PhD Supervisor.");
-                    }
-                  }}
-                  disabled={readOnly}
+                  disabled={true}
                 />
                 {editableData.supervisor.email && (
                   <a
@@ -163,7 +158,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium">DC Members</h3>
-            {!readOnly && (
+            {(!readOnly && isEditing) && (
               <Button
                 onClick={addMember}
                 variant="outline"
@@ -179,7 +174,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
             <div key={member.id ?? index} className="p-4 border border-gray-300 rounded-lg space-y-4">
               <div className="flex justify-between items-center">
                 <h4 className="font-medium">Member {index + 1}</h4>
-                {!readOnly && editableData.members.length > 1 && (
+                {(!readOnly && isEditing && editableData.members.length > 1) && (
                   <Button
                     onClick={() => removeMember(member.id)}
                     variant="ghost"
@@ -197,7 +192,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
                     value={member.name}
                     placeholder="Member Name"
                     onChange={(e) => handleMemberChange(member.id, 'name', e.target.value)}
-                    disabled={readOnly}
+                    disabled={readOnly || !isEditing}
                   />
                 </div>
                 <div className="space-y-2">
@@ -212,7 +207,7 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
                           alert("Please enter a valid email address for all DC members.");
                         }
                       }}
-                      disabled={readOnly}
+                      disabled={readOnly || !isEditing}
                     />
                     {member.email && (
                       <a
@@ -234,12 +229,22 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end pt-4">
+      <CardFooter className="flex justify-end gap-4">
         {!readOnly && (
-          <Button onClick={handleSave} className="gap-2 bg-primary text-white hover:bg-primary/90">
-            <Save className="h-4 w-4" />
-            Save Changes
-          </Button>
+          <>
+            <Button
+              onClick={() => setIsEditing(!isEditing)}
+              className="gap-2"
+              variant="outline"
+            >
+              <Edit className="h-4 w-4" /> {isEditing ? "Cancel" : "Edit"}
+            </Button>
+            {isEditing && (
+              <Button onClick={handleSave} className="gap-2">
+                <Save className="h-4 w-4" /> Save Changes
+              </Button>
+            )}
+          </>
         )}
       </CardFooter>
     </Card>

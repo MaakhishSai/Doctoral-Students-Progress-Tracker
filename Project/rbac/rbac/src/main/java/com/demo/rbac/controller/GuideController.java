@@ -2,6 +2,7 @@ package com.demo.rbac.controller;
 
 import java.util.List;
 
+import com.demo.rbac.dto.GuideDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,4 +37,5 @@ public ResponseEntity<List<StudentUnderGuideDTO>> getStudentsUnderGuide(@PathVar
         Long guideId = guideService.getGuideIdByEmail(email);
         return (guideId != null) ? ResponseEntity.ok(guideId) : ResponseEntity.notFound().build();
     }
+
 }

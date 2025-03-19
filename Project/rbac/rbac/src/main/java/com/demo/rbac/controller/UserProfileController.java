@@ -26,35 +26,42 @@ public class UserProfileController {
             throw new RuntimeException("User not authenticated");
         }
 
-        // Extracting user information from OAuth2User
         String name = oAuth2User.getAttribute("name");
         String email = oAuth2User.getAttribute("email");
-        // obtaining roll no from here itself
         int endIdx = email.indexOf("nitc.ac.in");
         endIdx--;
         int startIdx = endIdx - 9;
-        String sub = email.substring(startIdx, endIdx);
-        String rollno = sub.toUpperCase();
-        // Preparing the response as a JSON object
+        String rollno = email.substring(startIdx, endIdx).toUpperCase();
+
         Map<String, String> response = new HashMap<>();
         response.put("name", name);
         response.put("email", email);
         response.put("rollNumber", rollno);
 
-        // Fetch the student record from the database to get ORCID and area of research
         Optional<Student> studentOpt = studentService.findByEmail(email);
         if (studentOpt.isPresent()) {
             Student student = studentOpt.get();
             response.put("orcid", student.getOrcid() != null ? student.getOrcid() : "");
             response.put("areaofresearch", student.getAreaofresearch() != null ? student.getAreaofresearch() : "");
+
+            // Include guide details if present
+            if (student.getGuide() != null) {
+                response.put("guideName", student.getGuide().getName());
+                response.put("guideEmail", student.getGuide().getEmail());
+            } else {
+                response.put("guideName", "");
+                response.put("guideEmail", "");
+            }
         } else {
-            // Student record not found, return empty strings
             response.put("orcid", "");
             response.put("areaofresearch", "");
+            response.put("guideName", "");
+            response.put("guideEmail", "");
         }
 
         return response;
     }
+
 
     @PutMapping("/update-profile")
     public ResponseEntity<?> updateProfile(@RequestBody Student updatedStudent) {

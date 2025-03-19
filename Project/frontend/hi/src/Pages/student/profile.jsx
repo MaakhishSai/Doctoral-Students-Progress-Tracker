@@ -14,7 +14,9 @@ const initialStudentData = {
   dateOfJoining: 'August 15, 2022',
   admissionScheme: '',
   researchArea: '',
-  rollNumber: ''  // will be fetched from API (mapped from "rollNumber")
+  rollNumber: '',  // will be fetched from API (mapped from "rollNumber")
+  guideName: '',   // fetched from backend
+  guideEmail: ''   // fetched from backend
 };
 
 // Initial DC state (empty structure)
@@ -36,7 +38,7 @@ const Profile = () => {
   const [hasDC, setHasDC] = useState(false);
   const { toast } = useToast();
 
-  // First effect: Fetch student profile
+  // First effect: Fetch student profile including guide details
   useEffect(() => {
     const fetchStudentProfile = async () => {
       try {
@@ -52,7 +54,9 @@ const Profile = () => {
             email: response.data.email,
             rollNumber: response.data.rollNumber, // using rollNumber as provided by backend
             orcidId: response.data.orcid,
-            researchArea: response.data.areaofresearch || ""
+            researchArea: response.data.areaofresearch || "",
+            guideName: response.data.guideName || "",   // new guide details
+            guideEmail: response.data.guideEmail || ""    // new guide details
           };
           setStudent(updatedStudent);
           console.log("Fetched student:", updatedStudent);
@@ -94,10 +98,17 @@ const Profile = () => {
         setDC(transformedDC);
       } catch (dcError) {
         if (dcError.response && dcError.response.status === 404) {
-          console.log("No existing DC found. User can create one upon saving.");
+          console.log("No existing DC found. Prepopulating supervisor details from profile.");
           setHasDC(false);
-          // Leave DC as the initial empty state.
-          setDC(initialDCData);
+          // Use the guide details fetched in the profile for the supervisor section.
+          setDC({
+            chair: initialDCData.chair,
+            supervisor: {
+              name: student.guideName,
+              email: student.guideEmail
+            },
+            members: initialDCData.members
+          });
         } else {
           console.error("Error fetching DC data:", dcError);
         }
@@ -105,7 +116,7 @@ const Profile = () => {
     };
 
     fetchDCData();
-  }, [student.rollNumber]);
+  }, [student.rollNumber, student.guideName, student.guideEmail]);
 
   const handleStudentUpdate = (updatedData) => {
     // Not altering student details in the DC flow.
@@ -193,4 +204,3 @@ const Profile = () => {
 };
 
 export default Profile;
-      

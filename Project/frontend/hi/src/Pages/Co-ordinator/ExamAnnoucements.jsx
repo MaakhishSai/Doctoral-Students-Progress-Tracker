@@ -1,16 +1,15 @@
-import { useState, useEffect,useCallback} from "react";
-import { 
-  Calendar, 
-  Search, 
-  Filter, 
-  Pencil, 
-  Trash2, 
-  Plus, 
-  Info, 
+import { useState, useEffect, useCallback } from "react";
+import {
+  Calendar,
+  Filter,
+  Pencil,
+  // Trash2, // REMOVED
+  Plus,
+  Info,
   ClipboardCheck,
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+  CheckCircle,
+  XCircle,
+  Clock,
   AlignLeft,
   Eye
 } from "lucide-react";
@@ -57,32 +56,26 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// Exam types
-
 const ExamAnnouncement = () => {
   // Common state
   const [activeTab, setActiveTab] = useState("announcements");
   const [loading, setLoading] = useState(true);
-  
+
   // Announcements state
   const [exams, setExams] = useState([]);
-  const [filteredExams, setFilteredExams] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState(null);
-  
+
   // Approved Requests state
   const [requests, setRequests] = useState([]);
   const [filteredRequests, setFilteredRequests] = useState([]);
   const [requestSearchQuery, setRequestSearchQuery] = useState("");
-//   const [statusFilter, setStatusFilter] = useState("all");
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [newStatus, setNewStatus] = useState("pending");
   const [file, setFile] = useState(null);
-  
+
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -91,335 +84,332 @@ const ExamAnnouncement = () => {
   // Approvals related states
   const [approvals, setApprovals] = useState([]);
   const [filteredApprovals, setFilteredApprovals] = useState([]);
-//   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [courseFilter, setCourseFilter] = useState("all");
-//   const [searchQuery, setSearchQuery] = useState("");
   const [viewingApproval, setViewingApproval] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-//   const [activeTab, setActiveTab] = useState("upload");
-  
-  // Form states
+
+  // Updated Form states – removed eligibility; added new fields;
   const [formData, setFormData] = useState({
     name: "",
-    date: "",
+    examDate: "",
     deadline: "",
-    eligibility: ""
+    examVenue: "",
+    examDuration: "",
+    examShift: "",
+    broadcast: false
   });
   const [Results, setResults] = useState([]);
   const [isViewing, setIsViewing] = useState(false);
-   const handleUpload = useCallback(async () => {
-      if (!file) return;
-      setIsUploading(true);
-  
-      const formData = new FormData();
-      formData.append("file", file);
-  
-      try {
-        const response = await fetch("http://localhost:8080/api/results/upload", {
-          method: "POST",
-          body: formData,
-          mode: 'cors'
-        });
-  
-        if (!response.ok) throw new Error("Failed to upload file");
-  
-        const data = await response.json();
-        setResults(data);
-        setUploadSuccess(true); // Hide upload after first submission
-        localStorage.setItem("uploadCompleted", "true"); // Prevent upload option from appearing
-  
-        toast.success("Results data processed", {
-          description: `${data.length} Results imported from ${file.name}`,
-        });
-      } catch (error) {
-        toast.error("Error uploading file");
-      } finally {
-        setIsUploading(false);
-      }
-    }, [file]);
-    const fetchStudents = useCallback(async () => {
-      try {
-        const response = await fetch("http://localhost:8080/api/results/all");
-    
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status} ${response.statusText}`);
-        }
-    
-        const data = await response.json();
-        console.log("Fetched students:", data);
-    
-        if (data.length > 0) {
-          setResults(data);
-          setUploadSuccess(true);
-          localStorage.setItem("uploadCompleted", "true");
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
-        toast.error(`Fetch error: ${error.message}`);
-      }
-    }, []);
-    useEffect(() => {
-      if (localStorage.getItem("uploadCompleted") === "true") {
-        fetchStudents();  // Ensure data is fetched on refresh
-      }
-    }, [fetchStudents]);
-    const handleViewStudents = () => {
-      setIsViewing(true);
-      fetchStudents(); // Ensure fresh data is fetched
-    };
-  
-    const handleSubmit = () => {
-      setIsSubmitted(true);
-      toast.success("Swayam Results have been submitted", {
-        description: `${courses.length} course records have been successfully added to the system.`,
+
+  // ============ UPLOAD RESULTS LOGIC ============
+  const handleUpload = useCallback(async () => {
+    if (!file) return;
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:8080/api/results/upload", {
+        method: "POST",
+        body: formData,
+        mode: "cors",
       });
-    };
-    const handleFileSelect = (selectedFile) => {
-      setFile(selectedFile);
-      setUploadSuccess(false);
-      setIsSubmitted(false);
-    };
+
+      if (!response.ok) throw new Error("Failed to upload file");
+
+      const data = await response.json();
+      setResults(data);
+      setUploadSuccess(true);
+      localStorage.setItem("uploadCompleted", "true");
+
+      toast.success("Results data processed", {
+        description: `${data.length} Results imported from ${file.name}`,
+      });
+    } catch (error) {
+      toast.error("Error uploading file");
+    } finally {
+      setIsUploading(false);
+    }
+  }, [file]);
+
+  const fetchStudents = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/results/all");
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      if (data.length > 0) {
+        setResults(data);
+        setUploadSuccess(true);
+        localStorage.setItem("uploadCompleted", "true");
+      }
+    } catch (error) {
+      toast.error(`Fetch error: ${error.message}`);
+    }
+  }, []);
+
   useEffect(() => {
-    // Load data for both tabs
+    if (localStorage.getItem("uploadCompleted") === "true") {
+      fetchStudents();
+    }
+  }, [fetchStudents]);
+
+  const handleViewStudents = () => {
+    setIsViewing(true);
+    fetchStudents();
+  };
+
+  const handleSubmit = () => {
+    setIsSubmitted(true);
+    toast.success("Swayam Results have been submitted", {
+      description: `${courses.length} course records have been successfully added to the system.`,
+    });
+  };
+
+  const handleFileSelect = (selectedFile) => {
+    setFile(selectedFile);
+    setUploadSuccess(false);
+    setIsSubmitted(false);
+  };
+
+  // ============ LOAD DATA (EXAMS + REQUESTS) ============
+  useEffect(() => {
     const loadAllData = async () => {
-      // Simulate loading data
-      const mockExams= [
-        {
-          id: "EX001",
-          name: "Comprehensive Exam",
-          date: "2025-01-15",
-          deadline: "2025-02-15",
-        //   eligibility: "Completed at least 3 semesters with CGPA of 8.0 or above",
-        },
-    
-      ];
+      try {
+        // 1) Fetch exams from server
+        const examRes = await fetch("http://localhost:8080/api/exams", {
+          method: "GET",
+        });
+        if (!examRes.ok) {
+          throw new Error("Failed to fetch exams");
+        }
+        const examData = await examRes.json();
+        setExams(examData);
 
-      const mockRequests= [
-        {
-          id: "REQ001",
-          studentName: "Rahul Kumar",
-          rollNumber: "P220780CS",
-          examName: "Comprehensive Exam",
-          status: "approved",
-          approvalDate: "2025-01-15",
-        },
-        {
-          id: "REQ002",
-          studentName: "Priya Singh",
-          rollNumber: "P230780CS",
-          examName: "Comprehensive Exam",
-          status: "approved",
-          approvalDate: "2025-01-18",
-        },
-        {
-          id: "REQ003",
-          studentName: "Amit Patel",
-          rollNumber: "P210780CS",
-          examName: "Comprehensive Exam",
-          status: "pending",
-          approvalDate: "",
-        },
-        {
-          id: "REQ004",
-          studentName: "Sunita Reddy",
-          rollNumber: "P220545CS",
-          examName: "Comprehensive Exam",
-          status: "rejected",
-          approvalDate: "2025-01-10",
-        },
-        {
-          id: "REQ005",
-          studentName: "Rajesh Verma",
-          rollNumber: "P230545CS",
-          examName: "Comprehensive Exam",
-          status: "approved",
-          approvalDate: "2025-01-20",
-        },
-      ];
+        // 2) Mock requests data
+        const mockRequests = [
+          {
+            id: "REQ001",
+            studentName: "Rahul Kumar",
+            rollNumber: "P220780CS",
+            examName: "Comprehensive Exam",
+            status: "approved",
+            approvalDate: "2025-01-15",
+          },
+          {
+            id: "REQ002",
+            studentName: "Priya Singh",
+            rollNumber: "P230780CS",
+            examName: "Comprehensive Exam",
+            status: "approved",
+            approvalDate: "2025-01-18",
+          },
+          {
+            id: "REQ003",
+            studentName: "Amit Patel",
+            rollNumber: "P210780CS",
+            examName: "Comprehensive Exam",
+            status: "pending",
+            approvalDate: "",
+          },
+          {
+            id: "REQ004",
+            studentName: "Sunita Reddy",
+            rollNumber: "P220545CS",
+            examName: "Comprehensive Exam",
+            status: "rejected",
+            approvalDate: "2025-01-10",
+          },
+          {
+            id: "REQ005",
+            studentName: "Rajesh Verma",
+            rollNumber: "P230545CS",
+            examName: "Comprehensive Exam",
+            status: "approved",
+            approvalDate: "2025-01-20",
+          },
+        ];
+        setRequests(mockRequests);
+        setFilteredRequests(mockRequests);
 
-      setExams(mockExams);
-      setFilteredExams(mockExams);
-      setRequests(mockRequests);
-      setFilteredRequests(mockRequests);
-      setLoading(false);
+        setLoading(false);
+      } catch (error) {
+        toast.error(`Error fetching data: ${error.message}`);
+        setLoading(false);
+      }
     };
 
     loadAllData();
-    
-    // Cleanup function
-    return () => {
-      // Reset states if needed
-    };
   }, []);
 
-  // =============== ANNOUNCEMENTS FUNCTIONALITY ===============
-  // Apply search filter for exams
-  useEffect(() => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const filtered = exams.filter(
-        exam =>
-          exam.name.toLowerCase().includes(query) ||
-          exam.eligibility.toLowerCase().includes(query)
-      );
-      setFilteredExams(filtered);
-    } else {
-      setFilteredExams(exams);
-    }
-  }, [searchQuery, exams]);
+  // ============ FORM + EXAM CRUD ============
 
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
-  const handleAddExam = () => {
-    // Validate form
-    if (!formData.name || !formData.date || !formData.deadline || !formData.eligibility) {
+  const handleAddExam = async () => {
+    if (
+      !formData.name ||
+      !formData.examDate ||
+      !formData.deadline ||
+      !formData.examVenue ||
+      !formData.examDuration ||
+      !formData.examShift
+    ) {
       toast.error("Please fill all fields", {
-        description: "All fields are required to add a new exam."
+        description: "All fields are required to add a new exam.",
+      });
+      return;
+    }
+    if (!formData.broadcast) {
+      toast.error("Broadcast Required", {
+        description:
+          "Please check the Broadcast Announcement box to announce the exam to all students.",
       });
       return;
     }
 
-    // Create new exam
-    const newExam= {
-      id: `EX${String(exams.length + 1).padStart(3, '0')}`,
-      ...formData
-    };
-
-    setExams(prev => [...prev, newExam]);
-    
-    // Reset form and close dialog
-    setFormData({
-      name: "",
-      date: "",
-      deadline: "",
-      eligibility: ""
-    });
-    
-    setIsAddDialogOpen(false);
-    
-    toast.success("Exam added", {
-      description: "The exam has been successfully added to the list."
-    });
+    try {
+      const response = await fetch("http://localhost:8080/api/exams/announce", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to announce exam");
+      }
+      const newExam = await response.json();
+      setExams((prev) => [...prev, newExam]);
+      toast.success("Exam announced", {
+        description: "The exam announcement has been successfully broadcasted to all students.",
+      });
+      setFormData({
+        name: "",
+        examDate: "",
+        deadline: "",
+        examVenue: "",
+        examDuration: "",
+        examShift: "",
+        broadcast: false,
+      });
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      toast.error("Error announcing exam", { description: error.message });
+    }
   };
 
-  const handleEditExam = () => {
+  const handleEditExam = async () => {
     if (!selectedExam) return;
-    
-    // Validate form
-    if (!formData.name || !formData.date || !formData.deadline || !formData.eligibility) {
+    if (
+      !formData.name ||
+      !formData.examDate ||
+      !formData.deadline ||
+      !formData.examVenue ||
+      !formData.examDuration ||
+      !formData.examShift
+    ) {
       toast.error("Please fill all fields", {
-        description: "All fields are required to update the exam."
+        description: "All fields are required to update the exam.",
       });
       return;
     }
-
-    // Update exam
-    setExams(prevExams =>
-      prevExams.map(exam =>
-        exam.id === selectedExam.id ? { ...exam, ...formData } : exam
-      )
-    );
-    
-    // Reset form and close dialog
-    setFormData({
-      name: "",
-      date: "",
-      deadline: "",
-      eligibility: ""
-    });
-    
-    setIsEditDialogOpen(false);
-    setSelectedExam(null);
-    
-    toast.success("Exam updated", {
-      description: "The exam details have been successfully updated."
-    });
-  };
-
-  const handleDeleteExam = () => {
-    if (!selectedExam) return;
-    
-    // Delete exam
-    setExams(prevExams => prevExams.filter(exam => exam.id !== selectedExam.id));
-    
-    setIsDeleteDialogOpen(false);
-    setSelectedExam(null);
-    
-    toast.success("Exam deleted", {
-      description: "The exam has been successfully deleted from the list."
-    });
+    if (!formData.broadcast) {
+      toast.error("Broadcast Required", {
+        description: "Announcement must be broadcasted.",
+      });
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:8080/api/exams/${selectedExam.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update exam");
+      }
+      const updatedExam = await response.json();
+      setExams((prevExams) =>
+        prevExams.map((exam) => (exam.id === selectedExam.id ? updatedExam : exam))
+      );
+      toast.success("Exam updated", {
+        description: "The exam details have been successfully updated.",
+      });
+      setFormData({
+        name: "",
+        examDate: "",
+        deadline: "",
+        examVenue: "",
+        examDuration: "",
+        examShift: "",
+        broadcast: false,
+      });
+      setIsEditDialogOpen(false);
+      setSelectedExam(null);
+    } catch (error) {
+      toast.error("Error updating exam", { description: error.message });
+    }
   };
 
   const openEditDialog = (exam) => {
     setSelectedExam(exam);
     setFormData({
       name: exam.name,
-      date: exam.date,
+      examDate: exam.examDate,
       deadline: exam.deadline,
-      eligibility: exam.eligibility
+      examVenue: exam.examVenue,
+      examDuration: exam.examDuration,
+      examShift: exam.examShift,
+      broadcast: exam.broadcast,
     });
     setIsEditDialogOpen(true);
   };
 
-  const openDeleteDialog = (exam) => {
-    setSelectedExam(exam);
-    setIsDeleteDialogOpen(true);
-  };
-
-  // =============== APPROVED REQUESTS FUNCTIONALITY ===============
-  // Apply filters for requests
+  // ============ REQUESTS TAB LOGIC ============
   useEffect(() => {
     let filtered = [...requests];
-    
-    // Filter by status
     if (statusFilter !== "all") {
-      filtered = filtered.filter(request => request.status === statusFilter);
+      filtered = filtered.filter((req) => req.status === statusFilter);
     }
-    
-    // Filter by search query
     if (requestSearchQuery) {
       const query = requestSearchQuery.toLowerCase();
       filtered = filtered.filter(
-        request =>
-          request.studentName.toLowerCase().includes(query) ||
-          request.rollNumber.toLowerCase().includes(query) ||
-          request.examName.toLowerCase().includes(query)
+        (req) =>
+          req.studentName.toLowerCase().includes(query) ||
+          req.rollNumber.toLowerCase().includes(query) ||
+          req.examName.toLowerCase().includes(query)
       );
     }
-    
     setFilteredRequests(filtered);
   }, [statusFilter, requestSearchQuery, requests]);
 
   const handleUpdateStatus = () => {
     if (!selectedRequest || !newStatus) return;
-    
-    // Update status
-    setRequests(prevRequests =>
-      prevRequests.map(request =>
-        request.id === selectedRequest.id 
-          ? { 
-              ...request, 
-              status: newStatus, 
-              approvalDate: newStatus === "pending" ? "" : new Date().toISOString().split('T')[0]
-            } 
+    setRequests((prevRequests) =>
+      prevRequests.map((request) =>
+        request.id === selectedRequest.id
+          ? {
+              ...request,
+              status: newStatus,
+              approvalDate:
+                newStatus === "pending" ? "" : new Date().toISOString().split("T")[0],
+            }
           : request
       )
     );
-    
     setIsStatusDialogOpen(false);
-    
     const statusMessages = {
       approved: "Request approved successfully",
       rejected: "Request rejected",
-      pending: "Request marked as pending"
+      pending: "Request marked as pending",
     };
-    
     toast.success("Status updated", {
-      description: statusMessages[newStatus]
+      description: statusMessages[newStatus],
     });
   };
 
@@ -429,6 +419,7 @@ const ExamAnnouncement = () => {
     setIsStatusDialogOpen(true);
   };
 
+  // ============ HELPER FUNCTIONS ============
   const getStatusIcon = (status) => {
     switch (status) {
       case "approved":
@@ -446,28 +437,32 @@ const ExamAnnouncement = () => {
     const styles = {
       approved: "bg-green-100 text-green-800 border border-green-200",
       rejected: "bg-red-100 text-red-800 border border-red-200",
-      pending: "bg-amber-100 text-amber-800 border border-amber-200"
+      pending: "bg-amber-100 text-amber-800 border border-amber-200",
     };
-    
     return (
-      <div className={cn("px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1", styles[status])}>
+      <div
+        className={cn(
+          "px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1",
+          styles[status]
+        )}
+      >
         {getStatusIcon(status)}
         <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
       </div>
     );
   };
 
-  // =============== COMMON UTILITY FUNCTIONS ===============
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
-    
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
+
+  // ============ RENDER ============
 
   if (loading) {
     return (
@@ -493,7 +488,7 @@ const ExamAnnouncement = () => {
         </p>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="announcements" className="text-sm">
               <Calendar className="mr-2 h-4 w-4" />
               Exam Announcements
@@ -510,22 +505,12 @@ const ExamAnnouncement = () => {
 
           {/* Exams Announcements Tab */}
           <TabsContent value="announcements" className="pt-4">
-            {/* Search and Add */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-border mb-8 animate-slide-up">
+            <div className="bg-white rounded-xl mb-4 animate-slide-up">
+              {/* Removed the search bar div for announcements */}
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                <div className="relative w-full md:w-72">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search exams..."
-                    className="pl-9"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="flex items-center gap-2">
+                    <Button className="flex items-right gap-2">
                       <Plus size={16} />
                       Announce Exam
                     </Button>
@@ -538,6 +523,7 @@ const ExamAnnouncement = () => {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
+                      {/* Exam Name */}
                       <div className="grid grid-cols-4 items-center gap-4">
                         <label htmlFor="name" className="text-right">
                           Exam Name
@@ -551,19 +537,21 @@ const ExamAnnouncement = () => {
                           onChange={handleFormChange}
                         />
                       </div>
+                      {/* Exam Date */}
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="date" className="text-right">
+                        <label htmlFor="examDate" className="text-right">
                           Exam Date
                         </label>
                         <Input
-                          id="date"
-                          name="date"
+                          id="examDate"
+                          name="examDate"
                           type="date"
                           className="col-span-3"
-                          value={formData.date}
+                          value={formData.examDate}
                           onChange={handleFormChange}
                         />
                       </div>
+                      {/* Application Deadline */}
                       <div className="grid grid-cols-4 items-center gap-4">
                         <label htmlFor="deadline" className="text-right">
                           Application Deadline
@@ -577,22 +565,77 @@ const ExamAnnouncement = () => {
                           onChange={handleFormChange}
                         />
                       </div>
+                      {/* Exam Venue */}
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="eligibility" className="text-right">
-                          Eligibility Criteria
+                        <label htmlFor="examVenue" className="text-right">
+                          Exam Venue
                         </label>
                         <Input
-                          id="eligibility"
-                          name="eligibility"
-                          placeholder="e.g., Completed at least 3 semesters with CGPA of 8.0 or above"
+                          id="examVenue"
+                          name="examVenue"
+                          placeholder="e.g., Main Auditorium"
                           className="col-span-3"
-                          value={formData.eligibility}
+                          value={formData.examVenue}
                           onChange={handleFormChange}
                         />
                       </div>
+                      {/* Exam Duration */}
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="examDuration" className="text-right">
+                          Exam Duration
+                        </label>
+                        <Input
+                          id="examDuration"
+                          name="examDuration"
+                          placeholder="e.g., 3 hours"
+                          className="col-span-3"
+                          value={formData.examDuration}
+                          onChange={handleFormChange}
+                        />
+                      </div>
+                      {/* Exam Shift */}
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="examShift" className="text-right">
+                          Exam Shift
+                        </label>
+                        <Select
+                          value={formData.examShift}
+                          onValueChange={(value) =>
+                            setFormData((prev) => ({ ...prev, examShift: value }))
+                          }
+                        >
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Select shift" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="January">January (2nd/3rd week)</SelectItem>
+                            <SelectItem value="May">May (2nd/3rd week)</SelectItem>
+                            <SelectItem value="September">September (2nd/3rd week)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Broadcast Checkbox */}
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="broadcast" className="text-right">
+                          Broadcast Announcement
+                        </label>
+                        <div className="col-span-3 flex items-center">
+                          <input
+                            id="broadcast"
+                            name="broadcast"
+                            type="checkbox"
+                            checked={formData.broadcast}
+                            onChange={handleFormChange}
+                            className="mr-2"
+                          />
+                          <span>This announcement will be broadcasted to all students</span>
+                        </div>
+                      </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+                      <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                        Cancel
+                      </Button>
                       <Button onClick={handleAddExam}>Add Exam</Button>
                     </DialogFooter>
                   </DialogContent>
@@ -607,60 +650,43 @@ const ExamAnnouncement = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[400px]">Exam Name</TableHead>
-                      <TableHead className="w-[200px]" >Exam Date</TableHead>
+                      <TableHead className="w-[200px]">Exam Date</TableHead>
                       <TableHead className="w-[300px]">Application Deadline</TableHead>
-                      {/* <TableHead className="w-[300px]">Eligibility Criteria</TableHead> */}
                       <TableHead className="w-[200px] text-center">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredExams.length > 0 ? (
-                      filteredExams.map((exam) => (
+                    {exams.length > 0 ? (
+                      exams.map((exam) => (
                         <TableRow key={exam.id} className="group">
                           <TableCell className="w-[400px] font-medium">{exam.name}</TableCell>
-                          <TableCell className="w-[200px]">{formatDate(exam.date)}</TableCell>
-                          <TableCell className="w-[300px]">{formatDate(exam.deadline)}</TableCell>
-                         
+                          <TableCell className="w-[200px]">
+                            {formatDate(exam.examDate)}
+                          </TableCell>
+                          <TableCell className="w-[300px]">
+                            {formatDate(exam.deadline)}
+                          </TableCell>
                           <TableCell className="w-[200px] items-center">
-                          <div className="flex justify-center items-center space-x-3">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    className="opacity-50 group-hover:opacity-100 hover:bg-blue-50 text-blue-600"
-                                    onClick={() => openEditDialog(exam)}
-                                  >
-                                    <Pencil size={16} />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Edit exam</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    className="opacity-50 group-hover:opacity-100 hover:bg-red-50 text-red-600"
-                                    onClick={() => openDeleteDialog(exam)}
-                                  >
-                                    <Trash2 size={16} />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Delete exam</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <div className="flex justify-center items-center space-x-3">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="opacity-50 group-hover:opacity-100 hover:bg-blue-50 text-blue-600"
+                                      onClick={() => openEditDialog(exam)}
+                                    >
+                                      <Pencil size={16} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Edit exam</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </TableCell>
-                          
                         </TableRow>
                       ))
                     ) : (
@@ -669,9 +695,7 @@ const ExamAnnouncement = () => {
                           <div className="flex flex-col items-center justify-center text-muted-foreground">
                             <Calendar className="h-10 w-10 mb-2" />
                             <h3 className="text-lg font-medium">No exams found</h3>
-                            <p className="text-sm">
-                              There are no exams matching your search.
-                            </p>
+                            <p className="text-sm">There are no exams to display.</p>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -704,15 +728,15 @@ const ExamAnnouncement = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="edit-date" className="text-right">
+                    <label htmlFor="edit-examDate" className="text-right">
                       Exam Date
                     </label>
                     <Input
-                      id="edit-date"
-                      name="date"
+                      id="edit-examDate"
+                      name="examDate"
                       type="date"
                       className="col-span-3"
-                      value={formData.date}
+                      value={formData.examDate}
                       onChange={handleFormChange}
                     />
                   </div>
@@ -730,53 +754,73 @@ const ExamAnnouncement = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="edit-eligibility" className="text-right">
-                      Eligibility Criteria
+                    <label htmlFor="edit-examVenue" className="text-right">
+                      Exam Venue
                     </label>
                     <Input
-                      id="edit-eligibility"
-                      name="eligibility"
+                      id="edit-examVenue"
+                      name="examVenue"
+                      placeholder="e.g., Main Auditorium"
                       className="col-span-3"
-                      value={formData.eligibility}
+                      value={formData.examVenue}
                       onChange={handleFormChange}
                     />
                   </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleEditExam}>Save Changes</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {/* Delete Confirmation Dialog */}
-            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-              <DialogContent className="sm:max-w-[450px]">
-                <DialogHeader>
-                  <DialogTitle>Delete Exam</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to delete this exam? This action cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                  {selectedExam && (
-                    <div className="bg-red-50 border border-red-100 rounded-md p-4">
-                      <p className="font-medium">{selectedExam.name}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Exam Date: {formatDate(selectedExam.date)}
-                      </p>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="edit-examDuration" className="text-right">
+                      Exam Duration
+                    </label>
+                    <Input
+                      id="edit-examDuration"
+                      name="examDuration"
+                      placeholder="e.g., 3 hours"
+                      className="col-span-3"
+                      value={formData.examDuration}
+                      onChange={handleFormChange}
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="edit-examShift" className="text-right">
+                      Exam Shift
+                    </label>
+                    <Select
+                      value={formData.examShift}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, examShift: value }))
+                      }
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select shift" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="January">January (2nd/3rd week)</SelectItem>
+                        <SelectItem value="May">May (2nd/3rd week)</SelectItem>
+                        <SelectItem value="September">September (2nd/3rd week)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="edit-broadcast" className="text-right">
+                      Broadcast Announcement
+                    </label>
+                    <div className="col-span-3 flex items-center">
+                      <input
+                        id="edit-broadcast"
+                        name="broadcast"
+                        type="checkbox"
+                        checked={formData.broadcast}
+                        onChange={handleFormChange}
+                        className="mr-2"
+                      />
+                      <span>This announcement will be broadcasted to all students</span>
                     </div>
-                  )}
+                  </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
-                  <Button 
-                    variant="destructive" 
-                    onClick={handleDeleteExam}
-                    className="bg-red-500 hover:bg-red-600"
-                  >
-                    Delete Exam
+                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancel
                   </Button>
+                  <Button onClick={handleEditExam}>Save Changes</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -784,11 +828,11 @@ const ExamAnnouncement = () => {
 
           {/* Approved Requests Tab */}
           <TabsContent value="requests" className="pt-4">
-            {/* Filters */}
+            {/* The search for requests remains unchanged */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-border mb-8 animate-slide-up">
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                 <div className="relative w-full md:w-72">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search by name, roll number..."
                     className="pl-9"
@@ -796,13 +840,8 @@ const ExamAnnouncement = () => {
                     onChange={(e) => setRequestSearchQuery(e.target.value)}
                   />
                 </div>
-                
                 <div className="flex items-center gap-2 w-full md:w-auto">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <Select
-                    value={statusFilter}
-                    onValueChange={setStatusFilter}
-                  >
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
@@ -817,7 +856,6 @@ const ExamAnnouncement = () => {
               </div>
             </div>
 
-            {/* Requests Table */}
             <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden animate-fade-in">
               <div className="overflow-x-auto">
                 <Table>
@@ -828,7 +866,6 @@ const ExamAnnouncement = () => {
                       <TableHead className="w-[300px]">Exam Name</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Approval Date</TableHead>
-                      {/* <TableHead className="text-right">Actions</TableHead> */}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -840,26 +877,6 @@ const ExamAnnouncement = () => {
                           <TableCell>{request.examName}</TableCell>
                           <TableCell>{getStatusBadge(request.status)}</TableCell>
                           <TableCell>{formatDate(request.approvalDate)}</TableCell>
-                          {/* <TableCell className="text-right">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    className="opacity-70 group-hover:opacity-100"
-                                    onClick={() => openStatusDialog(request)}
-                                  >
-                                    <AlignLeft size={14} className="mr-1" />
-                                    Change Status
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Change request status</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </TableCell> */}
                         </TableRow>
                       ))
                     ) : (
@@ -892,7 +909,6 @@ const ExamAnnouncement = () => {
               </div>
             </div>
 
-            {/* Status Update Dialog */}
             <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
               <DialogContent className="sm:max-w-[450px]">
                 <DialogHeader>
@@ -913,11 +929,9 @@ const ExamAnnouncement = () => {
                       </p>
                     </div>
                   )}
-                  
+
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      New Status
-                    </label>
+                    <label className="text-sm font-medium">New Status</label>
                     <Select
                       value={newStatus}
                       onValueChange={(value) => setNewStatus(value)}
@@ -949,13 +963,10 @@ const ExamAnnouncement = () => {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsStatusDialogOpen(false)}
-                  >
+                  <Button variant="outline" onClick={() => setIsStatusDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleUpdateStatus}
                     className={cn(
                       newStatus === "approved" && "bg-green-600 hover:bg-green-700",
@@ -968,81 +979,75 @@ const ExamAnnouncement = () => {
               </DialogContent>
             </Dialog>
           </TabsContent>
+
+          {/* Upload Results Tab */}
           <TabsContent value="upload" className="space-y-8">
-          {!uploadSuccess ? (
-            <>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-border">
-              <h2 className="text-xl font-semibold mb-4">Upload Results File</h2>
-              <FileUpload
-                onFileSelect={handleFileSelect}
-                accept=".xlsx,.xls,.csv"
-                maxSize={5}
-              />
-              
-              <div className="mt-6">
-                <Button 
-                  onClick={handleUpload} 
-                  disabled={!file || isUploading}
-                  className="w-full sm:w-auto"
-                >
-                  {isUploading ? "Processing..." : "Process Excel Data"}
-                </Button>
-              </div>
-            </div>
-            </>
-            ):(
+            {!uploadSuccess ? (
               <>
-              <div className="mt-6">
-              <Button onClick={handleViewStudents} className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                Comprehensive Exam Results
-              </Button>
-            </div>
-
-            {isViewing && Results.length > 0 &&  (
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-border animate-slide-up mb-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Comprehensive Exam Results</h2>
-                  {/* <Button onClick={handleSubmit} className="flex items-center gap-2">
-                    Upload Courses
-                  </Button> */}
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-border">
+                  <h2 className="text-xl font-semibold mb-4">Upload Results File</h2>
+                  <FileUpload
+                    onFileSelect={handleFileSelect}
+                    accept=".xlsx,.xls,.csv"
+                    maxSize={5}
+                  />
+                  <div className="mt-6">
+                    <Button
+                      onClick={handleUpload}
+                      disabled={!file || isUploading}
+                      className="w-full sm:w-auto"
+                    >
+                      {isUploading ? "Processing..." : "Process Excel Data"}
+                    </Button>
+                  </div>
                 </div>
-                <div className="overflow-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Core(20)</TableHead>
-                        <TableHead>Specialization(80)</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead> Status</TableHead>
-                        
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Results.map((Results) => (
-                        <TableRow key={Results.id}>
-                          <TableCell className="font-medium">{Results.id}</TableCell>
-                          <TableCell>{Results.name}</TableCell>
-                          <TableCell>{Results.core}</TableCell>
-                          <TableCell>{Results.specialization}</TableCell>
-                          <TableCell>{Results.specialization+Results.core}</TableCell>
-                          <TableCell>{Results.specialization + Results.core >= 35 ? "Pass" : "Fail"}</TableCell>
-
-                          
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+              </>
+            ) : (
+              <>
+                <div className="mt-6">
+                  <Button onClick={handleViewStudents} className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    Comprehensive Exam Results
+                  </Button>
                 </div>
-              </div>
+                {isViewing && Results.length > 0 && (
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-border animate-slide-up mb-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-xl font-semibold">Comprehensive Exam Results</h2>
+                    </div>
+                    <div className="overflow-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Core(20)</TableHead>
+                            <TableHead>Specialization(80)</TableHead>
+                            <TableHead>Total</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Results.map((res) => (
+                            <TableRow key={res.id}>
+                              <TableCell className="font-medium">{res.id}</TableCell>
+                              <TableCell>{res.name}</TableCell>
+                              <TableCell>{res.core}</TableCell>
+                              <TableCell>{res.specialization}</TableCell>
+                              <TableCell>{res.specialization + res.core}</TableCell>
+                              <TableCell>
+                                {res.specialization + res.core >= 35 ? "Pass" : "Fail"}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
-            </>
-            )
-          }
           </TabsContent>
-          
         </Tabs>
       </div>
     </DashboardLayout>

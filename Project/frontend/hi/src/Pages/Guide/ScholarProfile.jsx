@@ -1,74 +1,109 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import PageLayout from "@/components/Guide/layout/Layout";
 import ScholarsList from "@/components/Guide/Scholars/ScholarList";
 import ScholarDetail from "@/components/Guide/Scholars/ScholarDetail";
-
-// Sample data for demonstration
-const SAMPLE_SCHOLARS = [
-  {
-    id: "1",
-    name: "Rahul Kumar",
-    regNo: "P210020CS",
-    department: "Computer Science and Engineering",
-    researchArea: "Quantum Computing Applications in Cryptography",
-    guide: "Dr. Anand Kumar",
-    admissionYear: "2021",
-  },
-  {
-    id: "2",
-    name: "Priya Singh",
-    regNo: "P222002CS",
-    department: "Electrical Engineering",
-    researchArea: "Machine Learning for Medical Diagnostics",
-    guide: "Dr. Anand Kumar",
-    admissionYear: "2022",
-  },
-  {
-    id: "3",
-    name: "Amit Patel",
-    regNo: "P221802CS",
-    department: "Electronics and Communication",
-    researchArea: "Advanced Neural Networks for Image Recognition",
-    guide: "Dr. Anand Kumar",
-    admissionYear: "2022",
-  },
-  {
-    id: "4",
-    name: "Deepak Sharma",
-    regNo: "P232010CS",
-    department: "Mechanical Engineering",
-    researchArea: "Sustainable Energy Systems Optimization",
-    guide: "Dr. Anand Kumar",
-    admissionYear: "2023",
-  },
-  {
-    id: "5",
-    name: "Meena Gupta",
-    regNo: "P231907CS",
-    department: "Chemical Engineering",
-    researchArea: "Natural Language Processing for Regional Languages",
-    guide: "Dr. Anand Kumar",
-    admissionYear: "2023",
-  },
-];
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const ScholarProfiles = () => {
-  const [selectedScholarId, setSelectedScholarId] = useState(null);
-  const [scholars] = useState(SAMPLE_SCHOLARS);
+  const [selectedScholarRollNo, setSelectedScholarRollNo] = useState(null);
+  const [scholars, setScholars] = useState([]);
+  const [selectedScholar, setSelectedScholar] = useState(null); // Store full details
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [guideEmail, setGuideEmail] = useState("");
+  const [guideId, setGuideId] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const selectedScholar = scholars.find(scholar => scholar.id === selectedScholarId);
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  // Fetch Guide Email
+  useEffect(() => {
+    const fetchGuideEmail = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/user/super", { withCredentials: true });
+        setGuideEmail(response.data.email || "");
+      } catch (error) {
+        console.error("Error fetching guide email:", error);
+        showSnackbar("Failed to fetch guide email");
+      }
+    };
+    fetchGuideEmail();
+  }, []);
+
+  // Fetch Guide ID
+  useEffect(() => {
+    if (!guideEmail) return;
+    const fetchGuideId = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/guides/email/${guideEmail}`, { withCredentials: true });
+        setGuideId(response.data || null);
+      } catch (error) {
+        console.error("Error fetching guide ID:", error);
+        showSnackbar("Failed to fetch guide ID");
+      }
+    };
+    fetchGuideId();
+  }, [guideEmail]);
+
+  // Fetch Scholars Under Guide
+  useEffect(() => {
+    if (!guideId) return;
+    const fetchScholars = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/guides/${guideId}/students`, { withCredentials: true });
+        setScholars(response.data || []);
+      } catch (error) {
+        console.error("Error fetching scholars:", error);
+        setError("Failed to load scholars");
+        showSnackbar("Failed to load scholars");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchScholars();
+  }, [guideId]);
+
+  // Fetch full student details when a scholar is selected
+  useEffect(() => {
+    if (!selectedScholarRollNo) {
+      setSelectedScholar(null);
+      return;
+    }
+
+    const fetchStudentProfile = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/students/${selectedScholarRollNo}`, {
+          withCredentials: true,
+        });
+        console.log("Profile response:", response.data);
+        
+        setSelectedScholar(response.data);
+      } catch (error) {
+        console.error("Error fetching full student profile:", error);
+        showSnackbar("Failed to load student details");
+      }
+    };
+
+    fetchStudentProfile();
+  }, [selectedScholarRollNo]);
 
   return (
     <PageLayout>
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-semibold mb-6">Student Profiles</h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
-            <ScholarsList 
+            <ScholarsList
               scholars={scholars}
-              selectedScholarId={selectedScholarId}
-              onScholarSelect={setSelectedScholarId}
+              selectedScholarId={selectedScholarRollNo} // Pass rollNo instead of id
+              onScholarSelect={setSelectedScholarRollNo} // Update with rollNo
             />
           </div>
           <div className="lg:col-span-2">

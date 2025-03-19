@@ -6,40 +6,27 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-
-
-
 const ScholarsList = ({ 
   scholars, 
   selectedScholarId, 
   onScholarSelect 
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredScholars, setFilteredScholars] = useState(scholars);
 
-  const handleSearch = () => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    
-    if (!term.trim()) {
-      setFilteredScholars(scholars);
-      return;
-    }
-    
-    const filtered = scholars.filter(scholar => 
-      scholar.name.toLowerCase().includes(term.toLowerCase()) ||
-      scholar.regNo.toLowerCase().includes(term.toLowerCase()) ||
-      scholar.department.toLowerCase().includes(term.toLowerCase()) ||
-      scholar.researchArea.toLowerCase().includes(term.toLowerCase())
-    );
-    
-    setFilteredScholars(filtered);
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const resetSearch = () => {
     setSearchTerm("");
-    setFilteredScholars(scholars);
   };
+
+  const filteredScholars = scholars.filter(scholar =>
+    scholar.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    scholar.rollNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    scholar.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    scholar.researchArea.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Card className="shadow-soft border">
@@ -74,13 +61,13 @@ const ScholarsList = ({
             {filteredScholars.length > 0 ? (
               filteredScholars.map(scholar => (
                 <div 
-                  key={scholar.id}
+                  key={scholar.rollNo} 
                   className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all-200 ${
-                    selectedScholarId === scholar.id
+                    selectedScholarId === scholar.rollNo
                       ? "bg-primary/10 border border-primary/20"
                       : "bg-secondary/50 border border-transparent hover:bg-secondary"
                   }`}
-                  onClick={() => onScholarSelect(scholar.id)}
+                  onClick={() => onScholarSelect(scholar.rollNo)}
                 >
                   <Avatar className="h-10 w-10 border border-border">
                     <AvatarImage src="/placeholder.svg" alt={scholar.name} />
@@ -92,7 +79,7 @@ const ScholarsList = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col">
                       <h3 className="font-medium truncate">{scholar.name}</h3>
-                      <p className="text-sm text-muted-foreground">{scholar.regNo}</p>
+                      <p className="text-sm text-muted-foreground">{scholar.rollNo}</p>
                     </div>
                   </div>
                 </div>

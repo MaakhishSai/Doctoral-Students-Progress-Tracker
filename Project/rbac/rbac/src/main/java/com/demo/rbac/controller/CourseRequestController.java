@@ -39,6 +39,13 @@ public class CourseRequestController {
         courseRequestRepository.saveAll(requests);
         return ResponseEntity.ok("{ \"message\": \"Course request submitted successfully!\" }");
     }
+    @GetMapping("/approved/{studentId}")
+public ResponseEntity<List<CourseRequest>> getApprovedRequestsByStudent(@PathVariable String studentId) {
+    studentId = studentId.trim(); // Trim any extra spaces or newlines
+    List<CourseRequest> requests = courseRequestRepository.findByStudentIdAndStatus(studentId, "Approved");
+    return ResponseEntity.ok(requests);
+}
+
     @GetMapping("/status/{studentId}")
     public ResponseEntity<List<CourseRequest>> getRequestsByStudent(@PathVariable String studentId) {
         System.out.println("Received studentId: [" + studentId + "]");

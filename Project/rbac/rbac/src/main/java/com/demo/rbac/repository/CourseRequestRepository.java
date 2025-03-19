@@ -11,5 +11,6 @@ import com.demo.rbac.model.CourseRequest;
 @Repository
 public interface CourseRequestRepository extends JpaRepository<CourseRequest, Long> {
     List<CourseRequest> findByStudentId(String studentId);
-    Optional<CourseRequest> findByStudentIdAndCourseId(String studentId, String courseId);
+    Optional<CourseRequest> findByStudentIdAndCourseId(String studentId, String courseId); 
+    List<CourseRequest> findByStudentIdAndStatus(String studentId, String status);
 }

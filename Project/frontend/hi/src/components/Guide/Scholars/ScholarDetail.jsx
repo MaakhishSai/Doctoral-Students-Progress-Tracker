@@ -96,25 +96,6 @@ const ScholarDetail= ({ scholar }) => {
   //   { name: "Big Data Analytics", platform: "SWAYAM", status: "In Progress", certificate: false },
   // ];
 
-  
-
-  const comprehensiveExam = {
-    status: "Scheduled",
-    date: "October 15, 2023",
-    evaluators: [
-      "Dr. Anand Kumar",
-      "Dr. Ramesh Iyer",
-      "Dr. Suman Gupta",
-      "Dr. Priyanka Sharma",
-    ],
-    topics: [
-      "Advanced Data Structures",
-      "Machine Learning Algorithms",
-      "Neural Networks",
-      "Research Methodology"
-    ]
-  };
-
   return (
     <Card className="shadow-soft border animate-fade-in">
       <CardHeader className="pb-2">

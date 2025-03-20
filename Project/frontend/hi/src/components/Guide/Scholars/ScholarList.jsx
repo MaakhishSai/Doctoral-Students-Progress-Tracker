@@ -20,6 +20,7 @@ const ScholarsList = ({
   const resetSearch = () => {
     setSearchTerm("");
   };
+  
 
   const filteredScholars = scholars.filter(scholar =>
     scholar.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

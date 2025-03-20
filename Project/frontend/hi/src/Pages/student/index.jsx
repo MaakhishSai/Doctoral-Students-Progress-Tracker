@@ -183,11 +183,11 @@ const Index = () => {
               description="2 pending, 3 published"
               icon={<BookOpen className="h-6 w-6" />}
             />
-            <StatsCard
+            {/* <StatsCard
               title="DC Meetings"
               description="Next meeting on Nov 15"
               icon={<Calendar className="h-6 w-6" />}
-            />
+            /> */}
           </div>
         </div>
 

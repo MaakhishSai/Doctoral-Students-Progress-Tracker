@@ -29,10 +29,11 @@ const ScholarDetail= ({ scholar }) => {
         const response = await axios.get(
           `http://localhost:8080/api/students/${scholar.roll}/dc/get-dc`
         );
-        console.log(response.data);
+        console.log("hi",response.data);
         setDcMembers(response.data); // Assuming response contains an array of DC members
       } catch (error) {
         console.error("Error fetching DC members:", error);
+        setDcMembers([]);
       } finally {
         setLoading(false);
       }
@@ -88,11 +89,7 @@ const ScholarDetail= ({ scholar }) => {
   //   "Dr. Suman Gupta (Member)",
   // ];
 
-  const coursework = [
-    { code: "CSE6010", name: "Advanced Algorithms", credits: 4, grade: "A" },
-    { code: "CSE6011", name: "Machine Learning", credits: 4, grade: "A-" },
-    { code: "CSE6012", name: "Database Systems", credits: 3, grade: "B+" },
-  ];
+
 
   // const swayamCourses = [
   //   { name: "Deep Learning Specialization", platform: "NPTEL", status: "Completed", certificate: true },

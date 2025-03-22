@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ApplicationController {
 
     @Autowired
@@ -20,39 +21,34 @@ public class ApplicationController {
 
     @PostMapping("/applications")
     public Application createApplication(@RequestBody ApplicationDto dto) {
-        if (dto.getExamId() == null || dto.getStudentRollNo() == null) {
-            throw new RuntimeException("Missing examId or studentRollNo");
+        if (dto.getExamId() == null || dto.getStudentEmail() == null) {
+            throw new RuntimeException("Missing examId or studentEmail");
         }
 
-        // 1) Create the parent Application
         Application application = new Application();
         application.setExamId(dto.getExamId());
-        System.out.println(dto.getStudentRollNo());
-        application.setStudentRollNo(dto.getStudentRollNo());
-        application.setStatus(dto.getStatus()); // from JSON
+        application.setStudentEmail(dto.getStudentEmail());
+        application.setStatus(dto.getStatus());
         application.setDateApplied(LocalDateTime.now());
 
-        // 2) Convert each syllabus text into a SpecializedSyllabus entity
+        // Set the comment from the DTO
+        application.setComment(dto.getComment());
+
         List<SpecializedSyllabus> syllabusEntities = new ArrayList<>();
         if (dto.getSpecializedSyllabi() != null) {
             for (String text : dto.getSpecializedSyllabi()) {
                 SpecializedSyllabus s = new SpecializedSyllabus();
                 s.setContent(text);
-                s.setApplication(application); // link child -> parent
+                s.setApplication(application);
                 syllabusEntities.add(s);
             }
         }
-
-        // 3) Attach them to the application
         application.getSpecializedSyllabi().addAll(syllabusEntities);
-
-        // 4) Save the parent, which cascades & saves children
         return appRepo.save(application);
     }
 
-    @GetMapping("/student/{rollNo}")
-    public List<Application> getStudentApplications(@PathVariable String rollNo) {
-        return appRepo.findByStudentRollNo(rollNo);
+    @GetMapping("/applications/student/{email}")
+    public List<Application> getStudentApplications(@PathVariable String email) {
+        return appRepo.findByStudentEmail(email);
     }
-
 }

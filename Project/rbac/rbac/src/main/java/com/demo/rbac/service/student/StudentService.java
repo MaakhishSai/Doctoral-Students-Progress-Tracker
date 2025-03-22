@@ -9,6 +9,8 @@ import com.demo.rbac.repository.StudentRepository;
 import com.demo.rbac.repository.GuideRepository;
 import com.demo.rbac.repository.PublicationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
@@ -133,5 +135,12 @@ public class StudentService {
      */
     public int getPublicationCountForStudent(String rollNo) {
         return publicationRepository.countByRollNo(rollNo);
+    }
+
+    public Student getAuthenticatedStudent() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName(); // Typically, the email is set as the principal's username.
+        return studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Authenticated student not found for email: " + email));
     }
 }

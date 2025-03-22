@@ -1,5 +1,6 @@
 package com.demo.rbac.model.CompreExam;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +21,18 @@ public class Application {
     private Long id;
 
     private Long examId;           // which exam the student is applying for
-    private String studentRollNo;  // e.g., "P220545CS"
+    private String studentEmail;  // e.g., "P220545CS"
     private LocalDateTime dateApplied;
 
     private String status;
 
+    private String shift;
+
+    private String comment;
+
     // ONE Application -> MANY Syllabi
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<SpecializedSyllabus> specializedSyllabi = new ArrayList<>();
 
 }

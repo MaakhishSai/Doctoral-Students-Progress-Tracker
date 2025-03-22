@@ -10,8 +10,10 @@ import java.util.List;
 public class ApplicationDto {
 
     private Long examId;
-    private String studentRollNo;
+    private String studentEmail;
     private List<String> specializedSyllabi;
     private String status;
+    private String shift;
+    private String comment;
 
 }

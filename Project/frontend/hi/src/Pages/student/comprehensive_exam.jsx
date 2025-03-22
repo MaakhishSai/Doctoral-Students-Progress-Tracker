@@ -20,45 +20,56 @@ import {
   SelectTrigger, SelectValue
 } from '@/components/ui/select';
 
-// =============== FRONT-END STARTS HERE ===============
 const Exam = () => {
   const [activeTab, setActiveTab] = useState('announcements');
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [selectedExam, setSelectedExam] = useState(null);
-
-  // 1) Student info: get rollNo from user’s email (placeholder)
-  const currentStudent = {
-    name: 'Manhaas',
-    // Suppose you stored the roll no in localStorage after login:
-    rollNo: localStorage.getItem("rollNoFromEmail") || "P220545CS"
-  };
-
-  // 2) Announcements from /api/exams
+  const [currentStudent, setCurrentStudent] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
-
-  // 3) Student’s applications from /api/applications/student/{rollNo}
   const [applications, setApplications] = useState([]);
-
-  // 4) For specialized syllabi (multiple text boxes)
   const [specializedSyllabi, setSpecializedSyllabi] = useState(['']);
+  const [comment, setComment] = useState(""); // New state for student's comment
 
-  // ========== EXAMPLE STUDENT RESULTS (unchanged) ==========
+  // Example student results (unchanged)
   const studentResults = [
     { id: 1, rollNo: 'P210545CS', coreMarks: 16, specializationMarks: 72, totalMarks: 88, status: 'Pass', semester: 'Sem 1' },
     { id: 2, rollNo: 'P220545CS', coreMarks: 14, specializationMarks: 68, totalMarks: 82, status: 'Pass', semester: 'Sem 2' },
     { id: 3, rollNo: 'P230545CS', coreMarks: 10, specializationMarks: 24, totalMarks: 34, status: 'Fail', semester: 'Sem 3' },
   ];
 
-  // ========== LOAD EXAMS & APPLICATIONS ON MOUNT ==========
+  // Fetch authenticated student profile from backend
   useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/user/profile", {
+          credentials: 'include'
+        });
+        if (!res.ok) throw new Error("Failed to fetch user profile");
+        const profile = await res.json();
+        setCurrentStudent({
+          name: profile.name,
+          email: profile.email,
+          rollNo: profile.rollNumber
+        });
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to fetch user profile.");
+      }
+    };
+    fetchUserInfo();
+  }, []);
+
+  // Once student info is loaded, fetch exam announcements and student applications
+  useEffect(() => {
+    if (!currentStudent) return; // Wait until currentStudent is available
+
     const fetchData = async () => {
       try {
         // 1) Get all exam announcements
         const examRes = await fetch("http://localhost:8080/api/exams");
         if (!examRes.ok) throw new Error("Failed to fetch exams");
         const examData = await examRes.json();
-
-        // Map them to your desired shape
+        // Map exams and include the shift field from the backend (examShift)
         const mappedExams = examData.map((exam) => ({
           id: exam.id,
           examName: exam.name,
@@ -66,33 +77,33 @@ const Exam = () => {
           subject: exam.examVenue || "N/A",
           registrationDeadline: exam.deadline,
           isOpen: exam.broadcast,
+          shift: exam.examShift // New: include shift for the exam announcement
         }));
         setAnnouncements(mappedExams);
 
-        // 2) Get student’s existing applications
-        const appsRes = await fetch(`http://localhost:8080/api/applications/student/${currentStudent.rollNo}`);
+        // 2) Get student’s existing applications using student's email
+        const appsRes = await fetch(`http://localhost:8080/api/applications/student/${currentStudent.email}`);
         if (!appsRes.ok) throw new Error("Failed to fetch student's applications");
         const appsData = await appsRes.json();
-        // appsData might look like: [{ id, examId, studentRollNo, status, specializedSyllabi, ... }, ...]
         setApplications(appsData);
-
       } catch (err) {
         console.error(err);
         toast.error(err.message);
       }
     };
-    fetchData();
-  }, [currentStudent.rollNo]);
 
-  // ========== Handle "Apply" Button ==========
+    fetchData();
+  }, [currentStudent]);
+
+  // Handle "Apply" Button click
   const handleApply = (exam) => {
     setSelectedExam(exam);
     setShowApplyDialog(true);
-    // Reset the specialized syllabi array
-    setSpecializedSyllabi(['']);
+    setSpecializedSyllabi(['']); // Reset the specialized syllabi array
+    setComment(""); // Reset the comment field
   };
 
-  // ========== POST the new application ==========
+  // POST the new application, including shift and comment from the exam announcement
   const handleConfirmApplication = async () => {
     if (!selectedExam) return;
 
@@ -102,10 +113,11 @@ const Exam = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           examId: selectedExam.id,
-          studentName: currentStudent.name,
-          studentRollNo: currentStudent.rollNo,
+          studentEmail: currentStudent.email,
           specializedSyllabi,
-          status: "SUBMITTED"  // default status
+          status: "SUBMITTED",  // default status
+          shift: selectedExam.shift,  // include shift in payload
+          comment // include student's comment
         }),
       });
 
@@ -114,8 +126,8 @@ const Exam = () => {
       toast.success(`Successfully applied for ${selectedExam.examName}`);
       setShowApplyDialog(false);
 
-      // Optionally re-fetch the student's applications so the UI updates
-      const updatedApps = await fetch(`http://localhost:8080/api/applications/student/${currentStudent.rollNo}`);
+      // Re-fetch the student's applications so the UI updates
+      const updatedApps = await fetch(`http://localhost:8080/api/applications/student/${currentStudent.email}`);
       if (updatedApps.ok) {
         setApplications(await updatedApps.json());
       }
@@ -125,7 +137,7 @@ const Exam = () => {
     }
   };
 
-  // ========== Specialized Syllabus Fields ==========
+  // Specialized Syllabus Fields Handlers
   const handleAddSyllabusField = () => {
     setSpecializedSyllabi((prev) => [...prev, '']);
   };
@@ -138,23 +150,20 @@ const Exam = () => {
     });
   };
 
-  // ========== "Draft / Submitted / Approved / Rejected" TABS ==========
-
-  // 1) For each exam, see if there's an application. If not => DRAFT
-  //    If yes => use that application's status.
+  // Tabs Logic: Determine exam status based on applications
+  // Compare examId as number to avoid type mismatches.
   const getExamStatus = (examId) => {
-    const app = applications.find((a) => a.examId === examId);
-    if (!app) return "DRAFT"; 
+    const app = applications.find((a) => Number(a.examId) === Number(examId));
+    if (!app) return "DRAFT";
     return app.status || "SUBMITTED";
   };
 
-  // 2) Group them by status
   const draftExams = announcements.filter(e => getExamStatus(e.id) === "DRAFT");
   const submittedExams = announcements.filter(e => getExamStatus(e.id) === "SUBMITTED");
   const approvedExams = announcements.filter(e => getExamStatus(e.id) === "APPROVED");
   const rejectedExams = announcements.filter(e => getExamStatus(e.id) === "REJECTED");
 
-  // ========== Student Results Logic (unchanged) ==========
+  // Student Results Logic (unchanged)
   const [selectedSemester, setSelectedSemester] = useState('');
   const semesterGroups = studentResults.reduce((acc, result) => {
     if (!acc[result.semester]) acc[result.semester] = [];
@@ -165,6 +174,11 @@ const Exam = () => {
   const displaySemester = selectedSemester || (semesters.length > 0 ? semesters[0] : '');
   const displayResults = semesterGroups[displaySemester] || [];
 
+  // Wait for user profile to be loaded before rendering main content
+  if (!currentStudent) {
+    return <Layout><div>Loading...</div></Layout>;
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -172,7 +186,7 @@ const Exam = () => {
           Comprehensive Exam Management
         </h1>
 
-        {/* ========== MAIN TABS: Announcements / Apply / Results ========== */}
+        {/* MAIN TABS: Announcements / Apply / Results */}
         <Tabs defaultValue="announcements" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="announcements" className="flex items-center gap-2">
@@ -189,10 +203,8 @@ const Exam = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* =================== ANNOUNCEMENTS TAB =================== */}
+          {/* ANNOUNCEMENTS TAB */}
           <TabsContent value="announcements" className="mt-6">
-            
-            {/* SECONDARY TABS: DRAFT / SUBMITTED / APPROVED / REJECTED */}
             <Tabs defaultValue="draft" className="mt">
               <TabsList>
                 <TabsTrigger value="draft">Draft</TabsTrigger>
@@ -224,12 +236,16 @@ const Exam = () => {
                               <span className="font-medium">Registration Deadline:</span>
                               <span>{new Date(exam.registrationDeadline).toLocaleDateString()}</span>
                             </div>
+                            {exam.shift && (
+                              <div className="flex justify-between">
+                                <span className="font-medium">Shift:</span>
+                                <span>{exam.shift}</span>
+                              </div>
+                            )}
                           </div>
                         </CardContent>
                         <CardFooter>
-                          <Button onClick={() => handleApply(exam)}>
-                            Apply Now
-                          </Button>
+                          <Button onClick={() => handleApply(exam)}>Apply Now</Button>
                         </CardFooter>
                       </Card>
                     ))}
@@ -262,6 +278,12 @@ const Exam = () => {
                               <span className="font-medium">Registration Deadline:</span>
                               <span>{new Date(exam.registrationDeadline).toLocaleDateString()}</span>
                             </div>
+                            {exam.shift && (
+                              <div className="flex justify-between">
+                                <span className="font-medium">Shift:</span>
+                                <span>{exam.shift}</span>
+                              </div>
+                            )}
                           </div>
                         </CardContent>
                         <CardFooter>
@@ -298,6 +320,12 @@ const Exam = () => {
                               <span className="font-medium">Registration Deadline:</span>
                               <span>{new Date(exam.registrationDeadline).toLocaleDateString()}</span>
                             </div>
+                            {exam.shift && (
+                              <div className="flex justify-between">
+                                <span className="font-medium">Shift:</span>
+                                <span>{exam.shift}</span>
+                              </div>
+                            )}
                           </div>
                         </CardContent>
                         <CardFooter>
@@ -334,6 +362,12 @@ const Exam = () => {
                               <span className="font-medium">Registration Deadline:</span>
                               <span>{new Date(exam.registrationDeadline).toLocaleDateString()}</span>
                             </div>
+                            {exam.shift && (
+                              <div className="flex justify-between">
+                                <span className="font-medium">Shift:</span>
+                                <span>{exam.shift}</span>
+                              </div>
+                            )}
                           </div>
                         </CardContent>
                         <CardFooter>
@@ -349,7 +383,7 @@ const Exam = () => {
             </Tabs>
           </TabsContent>
 
-          {/* =================== APPLY TAB =================== */}
+          {/* APPLY TAB */}
           <TabsContent value="apply" className="mt-6">
             <Card>
               <CardHeader>
@@ -361,33 +395,31 @@ const Exam = () => {
               <CardContent>
                 <div className="space-y-4">
                   {announcements.filter(a => a.isOpen).length > 0 ? (
-                    announcements
-                      .filter(a => a.isOpen)
-                      .map(announcement => (
-                        <Card key={announcement.id} className="overflow-hidden">
-                          <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                              <h3 className="font-medium">{announcement.examName}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {announcement.subject}
-                              </p>
-                              <div className="flex flex-col md:flex-row gap-4 mt-2">
-                                <span className="text-sm">
-                                  <span className="font-medium">Exam Date:</span>{" "}
-                                  {new Date(announcement.examDate).toLocaleDateString()}
-                                </span>
-                                <span className="text-sm">
-                                  <span className="font-medium">Deadline:</span>{" "}
-                                  {new Date(announcement.registrationDeadline).toLocaleDateString()}
-                                </span>
-                              </div>
+                    announcements.filter(a => a.isOpen).map(announcement => (
+                      <Card key={announcement.id} className="overflow-hidden">
+                        <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div>
+                            <h3 className="font-medium">{announcement.examName}</h3>
+                            <p className="text-sm text-muted-foreground">{announcement.subject}</p>
+                            <div className="flex flex-col md:flex-row gap-4 mt-2">
+                              <span className="text-sm">
+                                <span className="font-medium">Exam Date:</span> {new Date(announcement.examDate).toLocaleDateString()}
+                              </span>
+                              <span className="text-sm">
+                                <span className="font-medium">Deadline:</span> {new Date(announcement.registrationDeadline).toLocaleDateString()}
+                              </span>
                             </div>
-                            <Button onClick={() => handleApply(announcement)}>
-                              Apply Now
-                            </Button>
+                            {announcement.shift && (
+                              <div className="flex justify-between">
+                                <span className="font-medium">Shift:</span>
+                                <span>{announcement.shift}</span>
+                              </div>
+                            )}
                           </div>
-                        </Card>
-                      ))
+                          <Button onClick={() => handleApply(announcement)}>Apply Now</Button>
+                        </div>
+                      </Card>
+                    ))
                   ) : (
                     <div className="text-center py-8">
                       <p className="text-muted-foreground">
@@ -403,7 +435,7 @@ const Exam = () => {
             </Card>
           </TabsContent>
 
-          {/* =================== RESULTS TAB =================== */}
+          {/* RESULTS TAB */}
           <TabsContent value="results" className="mt-6">
             <Card>
               <CardHeader>
@@ -427,18 +459,13 @@ const Exam = () => {
                     </div>
                     {semesters.length > 0 && (
                       <div className="w-full md:w-64">
-                        <Select
-                          value={displaySemester}
-                          onValueChange={setSelectedSemester}
-                        >
+                        <Select value={displaySemester} onValueChange={setSelectedSemester}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select semester" />
                           </SelectTrigger>
                           <SelectContent>
                             {semesters.map((semester) => (
-                              <SelectItem key={semester} value={semester}>
-                                {semester}
-                              </SelectItem>
+                              <SelectItem key={semester} value={semester}>{semester}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -457,6 +484,7 @@ const Exam = () => {
                             <TableHead className="text-right">Specialization (80)</TableHead>
                             <TableHead className="text-right">Total (100)</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Comment</TableHead> {/* New column for comment */}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -470,6 +498,7 @@ const Exam = () => {
                                   {result.status}
                                 </Badge>
                               </TableCell>
+                              <TableCell>{result.comment}</TableCell> {/* Display comment */}
                             </TableRow>
                           ))}
                         </TableBody>
@@ -478,9 +507,7 @@ const Exam = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">
-                      No results available for {displaySemester}.
-                    </p>
+                    <p className="text-muted-foreground">No results available for {displaySemester}.</p>
                   </div>
                 )}
               </CardContent>
@@ -488,7 +515,7 @@ const Exam = () => {
           </TabsContent>
         </Tabs>
 
-        {/* =================== APPLY DIALOG =================== */}
+        {/* APPLY DIALOG */}
         <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
           <DialogContent>
             <DialogHeader>
@@ -497,14 +524,12 @@ const Exam = () => {
                 Please confirm your application for the following exam:
               </DialogDescription>
             </DialogHeader>
-
             {selectedExam && (
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <h4 className="font-medium">{selectedExam.examName}</h4>
                   <p className="text-sm text-muted-foreground">{selectedExam.subject}</p>
                 </div>
-                
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="font-medium">Exam Date</p>
@@ -515,12 +540,9 @@ const Exam = () => {
                     <p>{new Date(selectedExam.registrationDeadline).toLocaleDateString()}</p>
                   </div>
                 </div>
-
                 {/* Specialized Syllabi Textareas */}
                 <div className="border-t pt-4 mt-4">
-                  <p className="font-medium text-sm mb-2">
-                    Specialized Subjects Syllabus
-                  </p>
+                  <p className="font-medium text-sm mb-2">Specialized Subjects Syllabus</p>
                   {specializedSyllabi.map((syllabus, index) => (
                     <textarea
                       key={index}
@@ -530,28 +552,32 @@ const Exam = () => {
                       placeholder="Paste your specialized subject's syllabus here..."
                     />
                   ))}
-                  <Button
-                    variant="outline"
-                    className="text-sm"
-                    onClick={handleAddSyllabusField}
-                  >
+                  <Button variant="outline" className="text-sm" onClick={handleAddSyllabusField}>
                     + Add Another Syllabus
                   </Button>
                 </div>
-                
+                {/* New: Comment Field */}
+                <div className="border-t pt-4 mt-4">
+                  <p className="font-medium text-sm mb-2">Your Comment</p>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="w-full p-2 border rounded-md text-sm"
+                    placeholder="Enter your comment about the exam"
+                  />
+                </div>
                 <div className="text-sm text-muted-foreground border-t pt-4 mt-4">
-                  <p>By applying, you confirm that you meet all the requirements for this comprehensive exam.</p>
+                  <p>
+                    By applying, you confirm that you meet all the requirements for this comprehensive exam.
+                  </p>
                 </div>
               </div>
             )}
-
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowApplyDialog(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleConfirmApplication}>
-                Confirm Application
-              </Button>
+              <Button onClick={handleConfirmApplication}>Confirm Application</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

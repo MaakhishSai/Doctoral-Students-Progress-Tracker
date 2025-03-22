@@ -1,5 +1,6 @@
 package com.demo.rbac.model.CompreExam;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class SpecializedSyllabus {
 
     @ManyToOne
     @JoinColumn(name = "application_id")
+    @JsonBackReference
     private Application application;
 
 }

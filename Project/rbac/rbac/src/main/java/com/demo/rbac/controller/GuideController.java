@@ -32,6 +32,12 @@ public ResponseEntity<List<StudentUnderGuideDTO>> getStudentsUnderGuide(@PathVar
     return ResponseEntity.ok(students);
 }
 
+@GetMapping("/{guideId}")
+public ResponseEntity<GuideDTO> getGuideById(@PathVariable Long guideId) {
+    GuideDTO guide = guideService.getGuideById(guideId);
+    return (guide != null) ? ResponseEntity.ok(guide) : ResponseEntity.notFound().build();
+}
+
     @GetMapping("/email/{email}")
     public ResponseEntity<Long> getGuideIdByEmail(@PathVariable String email) {
         Long guideId = guideService.getGuideIdByEmail(email);

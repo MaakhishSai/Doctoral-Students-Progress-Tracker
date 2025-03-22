@@ -17,6 +17,7 @@ public class GuideService {
     public Long getGuideIdByEmail(String email) {
         return guideRepository.findGuideIdByEmail(email).orElse(null);
     }
+    
 
     public GuideDTO getGuideById(Long guideId) {
         // Assuming you already have a repository (e.g., GuideRepository) that you can use

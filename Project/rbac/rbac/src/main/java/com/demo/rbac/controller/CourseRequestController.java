@@ -94,5 +94,10 @@ public ResponseEntity<List<CourseRequest>> getApprovedRequestsByStudent(@PathVar
     
         return ResponseEntity.ok("Course request rejected");
     }
+    @GetMapping("/all")
+    public ResponseEntity<List<CourseRequest>> getAllCourseRequests() {
+    List<CourseRequest> requests = courseRequestRepository.findAll();
+    return ResponseEntity.ok(requests);
+}
     
 }

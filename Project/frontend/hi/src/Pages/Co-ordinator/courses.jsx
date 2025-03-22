@@ -1,4 +1,4 @@
-import { useState,useCallback,useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { FileText, Search, Filter, Download, Eye, BookOpen } from "lucide-react";
 import DashboardLayout from "@/components/Co-ordinator/layout/Layout";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,6 @@ import {
 import FileUpload from "@/components/Co-ordinator/FileUpload";
 import { toast } from "sonner";
 
-
 const SwayamCourseApprovals = () => {
   // Upload related states
   const [file, setFile] = useState(null);
@@ -49,6 +48,8 @@ const SwayamCourseApprovals = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [courses, setCourses] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [courseReqs, setCourseReqs] = useState([]); // State for course requirements
 
   // Approvals related states
   const [approvals, setApprovals] = useState([]);
@@ -60,6 +61,79 @@ const SwayamCourseApprovals = () => {
   const [viewingApproval, setViewingApproval] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [activeTab, setActiveTab] = useState("upload");
+  const [isViewing, setIsViewing] = useState(false);
+
+  // Fetch course requirements
+  const fetchCourseReqs = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/coursereq/all");
+      if (!response.ok) throw new Error("Failed to fetch course requirements");
+      const data = await response.json();
+      console.log(data);
+      setCourseReqs(data);
+      setApprovals(data);
+      setFilteredApprovals(data);
+    } catch (error) {
+      toast.error(`Error fetching course requirements: ${error.message}`);
+    }
+  }, []);
+
+  // Fetch students
+  const fetchStudents = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/students/all");
+      if (!response.ok) throw new Error("Failed to fetch students");
+      const data = await response.json();
+      console.log(data);
+      setStudents(data);
+    } catch (error) {
+      toast.error(`Error fetching students: ${error.message}`);
+    }
+  }, []);
+
+  // Fetch courses
+  const fetchCourses = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/courses/all");
+      if (!response.ok) throw new Error("Failed to fetch courses");
+      const data = await response.json();
+      setCourses(data);
+      setUploadSuccess(true);
+      localStorage.setItem("uploadCompleted", "true");
+    } catch (error) {
+      toast.error(`Error fetching courses: ${error.message}`);
+    }
+  }, []);
+  useEffect(() => {
+    if (courseReqs.length > 0 && students.length > 0) {
+      const updatedApprovals = courseReqs.map((approval) => {
+        const student = students.find((student) => student.studentId === approval.studentId);
+        return {
+          ...approval,
+          studentName: student ? student.studentName : "Unknown",
+          guide: student ? student.guideName : "Unknown",
+        };
+      });
+      setApprovals(updatedApprovals);
+      setFilteredApprovals(updatedApprovals);
+      setLoading(false);
+    }
+  }, [courseReqs, students]);
+
+  // Load data on component mount
+  useEffect(() => {
+    if (localStorage.getItem("uploadCompleted") === "true") {
+      fetchCourses();
+      fetchStudents();
+      fetchCourseReqs();
+    }
+  }, [fetchCourses, fetchStudents, fetchCourseReqs]);
+
+  // Handle view students
+  const handleViewStudents = () => {
+    setIsViewing(true);
+    fetchCourses(); // Ensure fresh data is fetched
+  };
 
   // Approval functions
   const handleViewDetails = (approval) => {
@@ -67,18 +141,15 @@ const SwayamCourseApprovals = () => {
     setOpenDialog(true);
   };
 
-  const exportToCSV = () => {
-    alert("Exporting approvals data to CSV...");
-  };
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case "approved":
+      case "Approved":
         return <Badge className="bg-green-500">Approved</Badge>;
-      case "rejected":
+      case "Rejected":
         return <Badge className="bg-red-500">Rejected</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case "Pending":
+        return <Badge className="bg-blue-500">Pending</Badge>;
       default:
         return null;
     }
@@ -109,8 +180,8 @@ const SwayamCourseApprovals = () => {
 
       const data = await response.json();
       setCourses(data);
-      setUploadSuccess(true); // Hide upload after first submission
-      localStorage.setItem("uploadCompleted", "true"); // Prevent upload option from appearing
+      setUploadSuccess(true);
+      localStorage.setItem("uploadCompleted", "true");
 
       toast.success("Courses data processed", {
         description: `${data.length} Courses imported from ${file.name}`,
@@ -130,93 +201,34 @@ const SwayamCourseApprovals = () => {
   };
 
   // Load approval data
-  useState(() => {
-    const timer = setTimeout(() => {
-      const mockApprovals = [
-        {
-          id: "APP001",
-          courseName: "Advanced Machine Learning",
-          courseId: "SWYM2023001",
-          studentName: "Rahul Kumar",
-          studentId: "P2023001CS",
-          guide: "Dr. Anil Sharma",
-          applicationDate: "2025-01-10",
-          status: "approved",
-          approvedBy: "Dr. Meena Gupta",
-          approvalDate: "2025-01-15",
-          comments: "Student has completed prerequisites.",
-        },
-        {
-          id: "APP002",
-          courseName: "Computer Vision and Applications",
-          courseId: "SWYM2023002",
-          studentName: "Priya Singh",
-          studentId: "P2023002CS",
-          guide: "Dr. Meena Gupta",
-          applicationDate: "2025-01-12",
-          status: "rejected",
-          approvedBy: "Dr. Suresh Iyer",
-          approvalDate: "2025-01-16",
-          comments: "Student lacks required background knowledge.",
-        },
-        {
-          id: "APP003",
-          courseName: "Natural Language Processing",
-          courseId: "SWYM2023003",
-          studentName: "Amit Patel",
-          studentId: "P2023003CS",
-          guide: "Dr. Suresh Iyer",
-          applicationDate: "2025-01-14",
-          status: "pending",
-        },
-        {
-          id: "APP004",
-          courseName: "Big Data Analytics",
-          courseId: "SWYM2023004",
-          studentName: "Sunita Reddy",
-          studentId: "P2023004CS",
-          guide: "Dr. Anil Sharma",
-          applicationDate: "2023-08-15",
-          status: "approved",
-          approvedBy: "Dr. Lalita Rao",
-          approvalDate: "2025-01-18",
-          comments: "Excellent fit for research interests.",
-        },
-        {
-          id: "APP005",
-          courseName: "Advanced Machine Learning",
-          courseId: "SWYM2023001",
-          studentName: "Rajesh Verma",
-          studentId: "P2023005CS",
-          guide: "Dr. Lalita Rao",
-          applicationDate: "2025-01-16",
-          status: "pending",
-        },
-      ];
+  // useState(() => {
+  //   const timer = setTimeout(() => {
 
-      setApprovals(mockApprovals);
-      setFilteredApprovals(mockApprovals);
-      setLoading(false);
-    }, 1500);
+  //     setApprovals(courseReqs);
+  //     setFilteredApprovals(courseReqs);
+  //     setLoading(false);
+  //   }, 1500);
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   // Filter approvals
-  useState(() => {
+  useEffect(() => {
     let filtered = [...approvals];
-    
+  
     // Filter by status
     if (statusFilter !== "all") {
-      filtered = filtered.filter(approval => approval.status === statusFilter);
+      filtered = filtered.filter(approval => approval.status.toLowerCase() === statusFilter.toLowerCase());
     }
-    
+  
     // Filter by course
     if (courseFilter !== "all") {
-      filtered = filtered.filter(approval => approval.courseId === courseFilter);
+      filtered = filtered.filter(approvals => approvals.courseId === courseFilter);
     }
-    
+  
+    console.log("hi",filtered);
     // Filter by search query
+    
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -227,7 +239,8 @@ const SwayamCourseApprovals = () => {
           approval.guide.toLowerCase().includes(query)
       );
     }
-    
+  
+    // Update filteredApprovals
     setFilteredApprovals(filtered);
   }, [statusFilter, courseFilter, searchQuery, approvals]);
 
@@ -238,43 +251,14 @@ const SwayamCourseApprovals = () => {
         uniqueCourses.set(approval.courseId, approval.courseName);
       }
     });
+    //console.log(uniqueCourses);
     
     return Array.from(uniqueCourses).map(([id, name]) => ({
       id,
       name,
     }));
   };
-  const [isViewing, setIsViewing] = useState(false);
-  const fetchStudents = useCallback(async () => {
-    try {
-      const response = await fetch("http://localhost:8080/api/courses/all");
-  
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`);
-      }
-  
-      const data = await response.json();
-      console.log("Fetched students:", data);
-  
-      if (data.length > 0) {
-        setCourses(data);
-        setUploadSuccess(true);
-        localStorage.setItem("uploadCompleted", "true");
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      toast.error(`Fetch error: ${error.message}`);
-    }
-  }, []);
-  useEffect(() => {
-    if (localStorage.getItem("uploadCompleted") === "true") {
-      fetchStudents();  // Ensure data is fetched on refresh
-    }
-  }, [fetchStudents]);
-  const handleViewStudents = () => {
-    setIsViewing(true);
-    fetchStudents(); // Ensure fresh data is fetched
-  };
+
   return (
     <DashboardLayout>
       <div className="animate-fade-in">
@@ -433,7 +417,7 @@ const SwayamCourseApprovals = () => {
               </div>
               
               <div className="flex justify-end">
-                <Button 
+                {/* <Button 
                   variant="outline" 
                   size="sm"
                   onClick={exportToCSV}
@@ -441,7 +425,7 @@ const SwayamCourseApprovals = () => {
                 >
                   <Download className="h-4 w-4" />
                   Export CSV
-                </Button>
+                </Button> */}
               </div>
             </div>
 
@@ -454,7 +438,7 @@ const SwayamCourseApprovals = () => {
                       <TableHead>Student</TableHead>
                       <TableHead>Course</TableHead>
                       <TableHead>Guide</TableHead>
-                      <TableHead>Application Date</TableHead>
+                      <TableHead>Provider</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -476,7 +460,7 @@ const SwayamCourseApprovals = () => {
                             </div>
                           </TableCell>
                           <TableCell>{approval.guide}</TableCell>
-                          <TableCell>{new Date(approval.applicationDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{approval.provider}</TableCell>
                           <TableCell>{getStatusBadge(approval.status)}</TableCell>
                           <TableCell className="text-right">
                             <TooltipProvider>
@@ -564,8 +548,8 @@ const SwayamCourseApprovals = () => {
                     <p>{viewingApproval.guide}</p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Application Date</h4>
-                    <p>{new Date(viewingApproval.applicationDate).toLocaleDateString()}</p>
+                    <h4 className="text-sm font-medium text-muted-foreground">Provider</h4>
+                    <p>{viewingApproval.provider}</p>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">Status</h4>

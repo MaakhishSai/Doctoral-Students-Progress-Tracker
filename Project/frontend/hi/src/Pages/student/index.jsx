@@ -23,22 +23,20 @@ import {
   Clock 
 } from 'lucide-react';
 import axios from 'axios';
-
 const upcomingMeetings = [
   {
     id: 1,
     title: "DC Committee Meeting",
-    date: "Nov 15, 2024",
+    date: "March 15, 2025",
     status: "scheduled",
   },
   {
     id: 2,
     title: "Progress Review",
-    date: "Dec 05, 2024",
+    date: "March 05, 2025",
     status: "pending",
   }
 ];
-
 const recentPublications = [
   {
     id: 1,
@@ -55,6 +53,36 @@ const recentPublications = [
     date: "june 15, 2024",
   }
 ];
+const getPublicationStats = (publications) => {
+  let stats = {
+    total: publications.length,
+    published: 0,
+    accepted: 0,
+    submitted: 0,
+    editorialRevision: 0
+  };
+
+  publications.forEach((pub) => {
+    switch (pub.status.toLowerCase()) {
+      case "published":
+        stats.published += 1;
+        break;
+      case "accepted":
+        stats.accepted += 1;
+        break;
+      case "submitted":
+        stats.submitted += 1;
+        break;
+      case "editorial revision":
+        stats.editorialRevision += 1;
+        break;
+      default:
+        break;
+    }
+  });
+
+  return stats;
+};
 
 const Index = () => {
   // Initially set with minimal mock data.
@@ -67,6 +95,11 @@ const Index = () => {
   const [error, setError] = useState(null);
   const [orcidInput, setOrcidInput] = useState("");  
   const [researchInput, setResearchInput] = useState("");
+  // const [profileData, setProfileData] = useState(null);
+  const [publications, setPublications] = useState([]);
+  const [publicationStats, setPublicationStats] = useState({ total: 0, published: 0, accepted: 0, submitted: 0, editorialRevision: 0 });
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   // Fetch profile from backend
@@ -91,6 +124,8 @@ const Index = () => {
           // Pre-fill local state if data is present
           setOrcidInput(response.data.orcid || "");
           setResearchInput(response.data.areaofresearch || "");
+          fetchPublications(response.data.rollNumber); 
+        
         } else {
           throw new Error('Invalid response format');
         }
@@ -104,6 +139,19 @@ const Index = () => {
 
     fetchProfileData();
   }, []);
+  const fetchPublications = async (rollNumber) => {
+    try {
+      const publicationsResponse = await axios.get(`http://localhost:8080/api/publications/get/${rollNumber}`);
+      setPublications(publicationsResponse.data);
+      console.log("Publications Data:", publicationsResponse.data);
+      setPublicationStats(getPublicationStats(publicationsResponse.data));
+      
+    } catch (err) {
+      console.error("Error fetching publications:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handler for saving ORCID and Research Area
   const handleProfileUpdate = async () => {
@@ -177,32 +225,78 @@ const Index = () => {
           </div>
 
           <div className="space-y-6">
-            <StatsCard
-              title="Publications"
-              value={5}
-              description="2 pending, 3 published"
-              icon={<BookOpen className="h-6 w-6" />}
-            />
-            {/* <StatsCard
-              title="DC Meetings"
-              description="Next meeting on Nov 15"
-              icon={<Calendar className="h-6 w-6" />}
-            /> */}
+          <StatsCard
+          title="Publications"
+          value={publicationStats.total}
+          description={`${publicationStats.accepted} accepted, ${publicationStats.published} published, ${publicationStats.submitted} submitted, ${publicationStats.editorialRevision} editorial revised`}
+          icon={<BookOpen className="h-6 w-6" />}
+        />
+
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            
             <Card className="card-transition">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle>Upcoming Meetings</CardTitle>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
+                  <CardTitle>Recent Publications</CardTitle>
+                  <Button variant="outline" size="sm" className="h-8 gap-1" onClick={()=>navigate("/addpublication")}>
                     <PlusCircle className="h-3.5 w-3.5" />
-                    <span>New Meeting</span>
+                    <span>Add Publication</span>
                   </Button>
                 </div>
-                <CardDescription>Your scheduled DC meetings and progress reviews</CardDescription>
+                <CardDescription>Your recent papers and journal submissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {publications.length > 0 ? (
+                  <div className="space-y-4">
+                    {publications.slice(-3).map((publication) => (
+                      <div key={publication.id} className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <h4 className="font-medium text-sm line-clamp-1">{publication.title}</h4>
+                          <div className={`text-xs font-medium ml-2 px-2 py-0.5 rounded flex-shrink-0 ${
+                            publication.status === 'Published' 
+                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                              : publication.status === 'Accepted' 
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : publication.status === 'Editorial Revision' 
+                                 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                  : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' // Default case
+                                  }`}>
+                                  {publication.status}
+                                  </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">{publication.journal}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{publication.publicationType}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center text-muted-foreground">
+                    <BookOpen className="mx-auto h-8 w-8 opacity-40 mb-2" />
+                    <p>No publications yet</p>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="pt-1">
+                <Button variant="ghost" size="sm" className="w-full justify-between" onClick={()=>navigate("/publication")}>
+                  <span>View all publications</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+            {/* <Card className="card-transition">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle>DC Meetings</CardTitle>
+                  <Button variant="outline" size="sm" className="h-8 gap-1" onClick={()=>navigate("/dcmeeting")}>
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span>DC Meeting</span>
+                  </Button>
+                </div>
+                <CardDescription>Your DC minutes reviews</CardDescription>
               </CardHeader>
               <CardContent>
                 {upcomingMeetings.length > 0 ? (
@@ -248,53 +342,7 @@ const Index = () => {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </CardFooter>
-            </Card>
-            
-            <Card className="card-transition">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle>Recent Publications</CardTitle>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span>Add Publication</span>
-                  </Button>
-                </div>
-                <CardDescription>Your recent papers and journal submissions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {recentPublications.length > 0 ? (
-                  <div className="space-y-4">
-                    {recentPublications.map((publication) => (
-                      <div key={publication.id} className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-sm line-clamp-1">{publication.title}</h4>
-                          <div className={`text-xs font-medium ml-2 px-2 py-0.5 rounded flex-shrink-0 ${
-                            publication.status === 'published' 
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                          }`}>
-                            {publication.status === 'published' ? 'Published' : 'Under Review'}
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{publication.journal}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{publication.date}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-8 text-center text-muted-foreground">
-                    <BookOpen className="mx-auto h-8 w-8 opacity-40 mb-2" />
-                    <p>No publications yet</p>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="pt-1">
-                <Button variant="ghost" size="sm" className="w-full justify-between" onClick={()=>navigate("/publication")}>
-                  <span>View all publications</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </CardFooter>
-            </Card>
+            </Card> */}
           </div>
           
           <div className="space-y-6">       
@@ -305,7 +353,7 @@ const Index = () => {
               <CardContent className="space-y-2">
                 <Button variant="secondary" size="sm" className="w-full justify-start gap-2" onClick={() => navigate('/dcmeeting')}>
                   <PlusCircle className="h-4 w-4" />
-                  <span> DC Meeting</span>
+                  <span> Submit DC Minutes</span>
                 </Button>
                 <Button variant="secondary" size="sm" className="w-full justify-start gap-2" onClick={()=> navigate('/addpublication')}>
                   <PlusCircle className="h-4 w-4" />

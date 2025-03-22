@@ -42,11 +42,20 @@ const DCInfoCard = ({ dcData, onUpdate, readOnly }) => {
     }));
   };
 
+  // const addMember = () => {
+  //   // New members have id: null
+  //   setEditableData((prev) => ({
+  //     ...prev,
+  //     members: [...prev.members, { id: null, name: '', email: '' }],
+  //   }));
+  // };
+
   const addMember = () => {
-    // New members have id: null
+    // Generate a temporary unique id for new members.
+    const newMember = { id: Date.now() + Math.random(), name: '', email: '' };
     setEditableData((prev) => ({
       ...prev,
-      members: [...prev.members, { id: null, name: '', email: '' }],
+      members: [...prev.members, newMember],
     }));
   };
 

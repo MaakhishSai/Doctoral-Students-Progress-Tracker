@@ -64,25 +64,27 @@ const ScholarDetail= ({ scholar }) => {
 
     fetchCourses();
   }, [scholar]);
-  
-    useEffect(() => {
-      if (!scholar || !scholar.roll) return;
-  
-      const fetchPublications = async () => {
-        try {
-          const publicationsResponse = await axios.get(`http://localhost:8080/api/publications/get/${scholar.roll}`);
-          console.log("Publications:", publicationsResponse.data);
-          setPublications(publicationsResponse.data);
-        } catch (error) {
-          console.error("Error fetching publications:", error);
-        }
-      };
-  
-      fetchPublications();
-    }, [scholar]);
+  useEffect(() => {
+    if (!scholar || !scholar.roll) return;
+    // console.log("hi");
+    const fetchPublications = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/publications/get/${scholar.roll}`
+        );
+        ;
+        setPublications(response.data);
+      } catch (error) {
+        console.error("Error fetching publications:", error);
+        setPublications([]);
+      }
+    };
+    
+    fetchPublications();
+  }, [scholar]);
   
   // In a real app, these would be fetched based on the scholar ID
-  console.log(scholar);
+  // console.log("1",publications);
   // const dcMembers = [
   //   "Dr. Anand Kumar (Guide)",
   //   "Dr. Ramesh Iyer (Chair)",
@@ -225,15 +227,22 @@ const ScholarDetail= ({ scholar }) => {
                    <div className="space-y-4">
                      {publications.length > 0 ? (
                        publications.map((pub, index) => (
-                         <div key={index} className="bg-secondary/50 p-4 rounded-md">
+                         <div key={index} className="bg-secondary/50 p-4 rounded-md relative">
+                          <p className="absolute top-5 right-4 text-sm text-muted-foreground">
+                            {pub.dateOfSubmission.join("-")}
+                            </p>
                            <h3 className="font-medium">{pub.title}</h3>
                            <p className="text-sm text-muted-foreground mt-1">
-                             {pub.publicationType} in {pub.journal} ({pub.dateOfSubmission.join("-")})
+                             {pub.publishername} 
                            </p>
                            {/* <p className="text-sm text-muted-foreground">DOI: {pub.doi}</p> */}
                            {/* <p className="text-sm text-muted-foreground">Status: {pub.status}</p> */}
-                           <div className="mt-2">
-                             <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 mx-2">
+                           <div className="mt-2 flex justify-between items-center w-full">
+                           <div className="flex gap flex-wrap">
+                             <Badge variant="outline" className="bg-white-1000 text-black-800 mx-1">
+                               {pub.indexing}
+                             </Badge>
+                             <Badge variant="outline" className="bg-white-100 text-white-800 mx-2">
                                {pub.publicationType}
                              </Badge>
                              <Badge variant="outline" 
@@ -250,6 +259,8 @@ const ScholarDetail= ({ scholar }) => {
                                  }`}>
                                   {pub.status}
                                   </Badge>
+                                  </div>
+
                              <a href={`https://doi.org/${pub.doi}`}   target="_blank" rel="noopener noreferrer" className="text-sm text-primary ml-2 hover:underline">
                                View Publication
                              </a>

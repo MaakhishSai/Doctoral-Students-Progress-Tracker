@@ -62,28 +62,54 @@ const PublicationList = ({ publications = [], onUpdateStatus }) => {
           },
           body: JSON.stringify({ status: editingStatus.status }),
         });
-
+  
         if (!response.ok) throw new Error("Failed to update status");
-
+  
         const updatedPublication = await response.json();
         onUpdateStatus?.(publication.id, updatedPublication.status);
-
+  
         toast.success(`Status updated to ${updatedPublication.status}`);
         setEditingStatus({ id: null, status: null });
-
-        // ✅ BEST OPTION: Call a function in the parent component to refresh the data
+  
+        // ✅ Call API to add history record
+        const historyResponse = await fetch(`/api/publications/history/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            // publicationId: publication.id,
+            title: publication.title, // ✅ Adding missing fields
+            publishername: publication.publishername,
+            journal: publication.journal,
+            doi: publication.doi,
+            publicationType: publication.publicationType,
+            indexing: publication.indexing,
+            quartile: publication.quartile,
+            rollNo: publication.rollNo,
+            status: updatedPublication.status,
+            dateOfSubmission: new Date().toISOString().split('T')[0], // Ensure format matches backend expectations
+          }),
+        });
+  
+        if (!historyResponse.ok) throw new Error("Failed to add history record");
+  
+        console.log("History added successfully");
+  
+        // ✅ Refresh data in parent component if available
         if (typeof onUpdateStatus === "function") {
           onUpdateStatus(publication.id, updatedPublication.status);
         } else {
-          // ❌ Fallback: Full page refresh (only if no parent function available)
-          window.location.reload();
+          window.location.reload(); // ❌ Fallback: Full page refresh
         }
       } catch (error) {
         toast.error("Error updating status");
-        console.error(error);
+        console.error("Error:", error);
       }
     }
   };
+  
+  
 
   const handleCancelEdit = () => {
     setEditingStatus({ id: null, status: null });
@@ -94,10 +120,12 @@ const PublicationList = ({ publications = [], onUpdateStatus }) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[40%]">Title</TableHead>
-            <TableHead className="w-[15%]">Journal/Conference</TableHead>
+            <TableHead className="w-[20%]">Title</TableHead>
+            <TableHead className="w-[15%]">Publisher Name</TableHead>
+            <TableHead className="w-[15%]">Indexing</TableHead>
             <TableHead className="w-[15%]">Type</TableHead>
-            <TableHead className="w-[15%]">Quartile</TableHead>
+            <TableHead className="w-[15%]">Category</TableHead>
+            {/* <TableHead className="w-[15%]">Status</TableHead> */}
             <TableHead className="w-[15%]">Status</TableHead>
             <TableHead className="w-[15%] text-right">Actions</TableHead>
           </TableRow>
@@ -110,8 +138,11 @@ const PublicationList = ({ publications = [], onUpdateStatus }) => {
                   {publication.title}
                   <div className="text-xs text-muted-foreground mt-1">DOI: {publication.doi}</div>
                 </TableCell>
-                <TableCell>{publication.journal}</TableCell>
+                <TableCell>{publication.publishername}</TableCell>
                 
+                <TableCell>
+                  <Badge variant="outline">{publication.indexing}</Badge>
+                </TableCell>
                 <TableCell>
                   <Badge variant="outline">{publication.publicationType}</Badge>
                 </TableCell>

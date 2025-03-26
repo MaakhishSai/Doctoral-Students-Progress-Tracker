@@ -48,12 +48,13 @@ const AddPublication = () => {
 
   const [formData, setFormData] = useState({
     title: '',
-    journal: '',
+    publishername: '',
     doi: '',
-    publicationType: 'Journal',
-    quartile: 'q1',
-    status: 'Submitted',
-    sendCopyToCoordinator: false,
+    publicationType: '',
+    quartile: '',
+    status: '',
+    journal: '',
+    indexing: '',
     dateOfSubmission: new Date().toISOString().split('T')[0],
   });
 console.log(formData);
@@ -75,9 +76,9 @@ console.log(formData);
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSwitchChange = (checked) => {
-    setFormData(prev => ({ ...prev, sendCopyToCoordinator: checked }));
-  };
+  // const handleSwitchChange = (checked) => {
+  //   setFormData(prev => ({ ...prev }));
+  // };
   const handleBack = () => {
     navigate('/publication');
   };
@@ -85,7 +86,11 @@ console.log(formData);
   const validateForm = () => {
     const newErrors = {};
     if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.journal.trim()) newErrors.journal = 'Journal name is required';
+    if (!formData.publicationType.trim()) newErrors.publicationType = 'Type of Publication is required';
+    if (!formData.publishername.trim()) newErrors.Publishername = 'Publisher name is required';
+    if (!formData.indexing.trim()) newErrors.indexing = 'indexing is required';
+    if (!formData.quartile.trim()) newErrors.quartile = 'category quartile is required';
+    if (!formData.status.trim()) newErrors.status = 'status is required';
     if (!formData.doi.trim()) {
       newErrors.doi = 'DOI is required';
     } else if (!/^10\.\d{4,}\/\S+$/.test(formData.doi)) {
@@ -102,17 +107,24 @@ console.log(formData);
   
     try {
       const payload = { ...formData, rollNo };
+  
+      // ✅ First API call - Add publication
       const response = await axios.post('http://localhost:8080/api/publications/add', payload, {
         headers: { 'Content-Type': 'application/json' },
       });
   
-      if (response.status >= 200 && response.status < 300) {  // Success range
+      if (response.status >= 200 && response.status < 300) { // Success range
         toast({ title: "Success", description: "Publication added successfully!", variant: "default" });
   
-        // Redirect after a small delay to allow the toast to be seen
+        // ✅ Second API call - Store in history table
+        await axios.post('http://localhost:8080/api/publications/history/add', payload, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+  
+        // Redirect after a small delay
         setTimeout(() => {
           navigate('/publication');
-        }, 500); // 500ms delay before redirecting
+        }, 500);
       } else {
         throw new Error('Failed to add publication');
       }
@@ -122,15 +134,18 @@ console.log(formData);
       setLoading(false);
     }
   };
+  
   const handleReset = () => {
     setFormData({
       title: '',
-      journal: '',
-      doi: '',
-      publicationType: 'Q1',
-      authors: [''],
-      status: 'Submitted',
-      sendCopyToCoordinator: false
+    publishername: '',
+    doi: '',
+    publicationType: 'Journal',
+    quartile: 'q1',
+    status: 'Submitted',
+    journal: '',
+    indexing: '',
+      // sendCopyToCoordinator: false
     });
     setErrors({});
   };
@@ -161,21 +176,37 @@ console.log(formData);
               <Label>Research Paper Title <span className="text-destructive">*</span></Label>
               <Input name="title" placeholder="Enter title" value={formData.title} onChange={handleInputChange} className={errors.title ? "border-destructive" : ""} />
               {errors.title && <p className="text-sm text-destructive">{errors.title}</p>}
-
-              <Label>Journal/Conference Name <span className="text-destructive">*</span></Label>
-              <Input name="journal" placeholder="Enter journal name" value={formData.journal} onChange={handleInputChange} className={errors.journal ? "border-destructive" : ""} />
-              {errors.journal && <p className="text-sm text-destructive">{errors.journal}</p>}
-
-              <Label>Type of Publication</Label>
+              <Label>Type of Publication<span className="text-destructive">*</span></Label>
               <Select value={formData.publicationType} onValueChange={(value) => handleSelectChange('publicationType', value)}>
                 <SelectTrigger><SelectValue placeholder="Select publication type" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Journal">Journal</SelectItem>
                   <SelectItem value="Conference">Conference</SelectItem>
+                  <SelectItem value="Bookchapter">Book chapter</SelectItem>
+                  <SelectItem value="Patent">Patent</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.publicationType && <p className="text-sm text-destructive">{errors.publicationType}</p>}
 
-              <Label>Quartile</Label>
+              <Label>Publisher Name <span className="text-destructive">*</span></Label>
+              <Input name="publishername" placeholder="Enter publisher name" value={formData.publishername} onChange={handleInputChange} className={errors.journal ? "border-destructive" : ""} />
+              {errors.Publishername && <p className="text-sm text-destructive">{errors.Publishername}</p>}
+              <Label>Journal</Label>
+              <Input name="journal" placeholder="journal" value={formData.journal} onChange={handleInputChange} className={errors.journal ? "border-destructive" : ""} />
+              {/* {errors.journal && <p className="text-sm text-destructive">{errors.journal}</p>} */}
+
+              <Label>Indexing<span className="text-destructive">*</span></Label>
+              <Select value={formData.indexing} onValueChange={(value) => handleSelectChange('indexing', value)}>
+                <SelectTrigger><SelectValue placeholder="Select Indexing" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Web of Science">Web of Science</SelectItem>
+                  <SelectItem value="scopus">Scopus</SelectItem>
+                  <SelectItem value="google scholar">Google Scholar</SelectItem>
+                  <SelectItem value="N/A">N/A</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.indexing && <p className="text-sm text-destructive">{errors.indexing}</p>}
+              <Label>Category Quartile<span className="text-destructive">*</span></Label>
               <Select value={formData.quartile} onValueChange={(value) => handleSelectChange('quartile', value)}>
                 <SelectTrigger><SelectValue placeholder="Select quartile" /></SelectTrigger>
                 <SelectContent>
@@ -183,10 +214,12 @@ console.log(formData);
                   <SelectItem value="q2">Q2</SelectItem>
                   <SelectItem value="q3">Q3</SelectItem>
                   <SelectItem value="q4">Q4</SelectItem>
+                  <SelectItem value="N/A">N/A</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.quartile && <p className="text-sm text-destructive">{errors.quartile}</p>}
 
-              <Label>Publication Status</Label>
+              <Label>Publication Status<span className="text-destructive">*</span></Label>
               <Select value={formData.status} onValueChange={(value) => handleSelectChange('status', value)}>
                 <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                 <SelectContent>
@@ -196,6 +229,7 @@ console.log(formData);
                   <SelectItem value="Published">Published</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.status && <p className="text-sm text-destructive">{errors.status}</p>}
 
               {/* <Label>Send Copy to Coordinator</Label> */}
               {/* <Switch checked={formData.sendCopyToCoordinator} onCheckedChange={handleSwitchChange} /> */}

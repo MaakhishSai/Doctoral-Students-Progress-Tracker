@@ -13,7 +13,15 @@ public class PublicationRequest {
     private String publicationType;
     private String quartile;
     private String status;
-    private boolean sendCopyToCoordinator;
+    // private String title;
+    private String publishername;
+    // private String journal;
+    // private String doi;
+    // private String publicationType;
+    // private String status;
+    private String indexing;
+    // private String quartile;
+    // private boolean sendCopyToCoordinator;
      private LocalDate dateOfSubmission; 
 }
 

@@ -1,5 +1,5 @@
-
-import React from "react";
+import axios from "axios"; // Ensure axios is installed
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,59 +11,92 @@ import {
   Calendar, Clipboard, 
   ClipboardCheck, Users
 } from "lucide-react";
-
+import { parseISO, isBefore } from "date-fns";
 
 
 const ScholarDetail= ({ scholar }) => {
+  const [dcMembers, setDcMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [publications, setPublications] = useState([]);
+  useEffect(() => {
+    if (!scholar || !scholar.roll) {
+      setDcMembers([]);
+      return;
+    }
+
+    const fetchDCMembers = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/students/${scholar.roll}/dc/get-dc`
+        );
+        console.log("hi",response.data);
+        setDcMembers(response.data); // Assuming response contains an array of DC members
+      } catch (error) {
+        console.error("Error fetching DC members:", error);
+        setDcMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDCMembers();
+  }, [scholar]);
+  
+  const [swayamCourses, setCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+
+  useEffect(() => {
+    if (!scholar || !scholar.roll) return;
+
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/coursereq/approved/${scholar.roll}`
+        );
+        console.log("Courses Data:", response.data);
+        setCourses(response.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+
+    fetchCourses();
+  }, [scholar]);
+  useEffect(() => {
+    if (!scholar || !scholar.roll) return;
+    // console.log("hi");
+    const fetchPublications = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/publications/get/${scholar.roll}`
+        );
+        ;
+        setPublications(response.data);
+      } catch (error) {
+        console.error("Error fetching publications:", error);
+        setPublications([]);
+      }
+    };
+    
+    fetchPublications();
+  }, [scholar]);
+  
   // In a real app, these would be fetched based on the scholar ID
-  const dcMembers = [
-    "Dr. Anand Kumar (Guide)",
-    "Dr. Ramesh Iyer (Chair)",
-    "Dr. Suman Gupta (Member)",
-  ];
+  // console.log("1",publications);
+  // const dcMembers = [
+  //   "Dr. Anand Kumar (Guide)",
+  //   "Dr. Ramesh Iyer (Chair)",
+  //   "Dr. Suman Gupta (Member)",
+  // ];
 
-  const coursework = [
-    { code: "CSE6010", name: "Advanced Algorithms", credits: 4, grade: "A" },
-    { code: "CSE6011", name: "Machine Learning", credits: 4, grade: "A-" },
-    { code: "CSE6012", name: "Database Systems", credits: 3, grade: "B+" },
-  ];
 
-  const swayamCourses = [
-    { name: "Deep Learning Specialization", platform: "NPTEL", status: "Completed", certificate: true },
-    { name: "Big Data Analytics", platform: "SWAYAM", status: "In Progress", certificate: false },
-  ];
 
-  const publications = [
-    { 
-      title: "Neural Networks for Medical Imaging: A Novel Approach", 
-      journal: "IEEE Transactions on Medical Imaging", 
-      year: "2022",
-      link: "#" 
-    },
-    { 
-      title: "Efficient Algorithms for Data Processing in Healthcare", 
-      conference: "International Conference on Machine Learning", 
-      year: "2021",
-      link: "#" 
-    },
-  ];
-
-  const comprehensiveExam = {
-    status: "Scheduled",
-    date: "October 15, 2023",
-    evaluators: [
-      "Dr. Anand Kumar",
-      "Dr. Ramesh Iyer",
-      "Dr. Suman Gupta",
-      "Dr. Priyanka Sharma",
-    ],
-    topics: [
-      "Advanced Data Structures",
-      "Machine Learning Algorithms",
-      "Neural Networks",
-      "Research Methodology"
-    ]
-  };
+  // const swayamCourses = [
+  //   { name: "Deep Learning Specialization", platform: "NPTEL", status: "Completed", certificate: true },
+  //   { name: "Big Data Analytics", platform: "SWAYAM", status: "In Progress", certificate: false },
+  // ];
 
   return (
     <Card className="shadow-soft border animate-fade-in">
@@ -77,7 +110,7 @@ const ScholarDetail= ({ scholar }) => {
           </Avatar>
           <div>
             <CardTitle className="text-xl">{scholar.name}</CardTitle>
-            <p className="text-muted-foreground mt-1">{scholar.regNo}</p>
+            <p className="text-muted-foreground mt-1">{scholar.rollNo}</p>
           </div>
         </div>
       </CardHeader>
@@ -106,11 +139,11 @@ const ScholarDetail= ({ scholar }) => {
                     </div>
                     <div className="grid grid-cols-4">
                       <span className="text-sm text-muted-foreground col-span-1">Reg No:</span>
-                      <span className="text-sm font-medium col-span-3">{scholar.regNo}</span>
+                      <span className="text-sm font-medium col-span-3">{scholar.roll}</span>
                     </div>
                     <div className="grid grid-cols-4">
                       <span className="text-sm text-muted-foreground col-span-1">Department:</span>
-                      <span className="text-sm font-medium col-span-3">{scholar.department}</span>
+                      <span className="text-sm font-medium col-span-3">CSE</span>
                     </div>
                   </div>
                 </div>
@@ -121,237 +154,171 @@ const ScholarDetail= ({ scholar }) => {
                   </h3>
                   <div className="bg-secondary/50 p-4 rounded-md space-y-2">
                     <div className="grid grid-cols-4">
-                      <span className="text-sm text-muted-foreground col-span-1">Guide:</span>
-                      <span className="text-sm font-medium col-span-3">{scholar.guide}</span>
+                      <span className="text-sm text-muted-foreground col-span-2">AdmissionScheme:</span>
+                      <span className="text-sm font-medium col-span-2">{scholar.admissionscheme
+                      }</span>
                     </div>
                     <div className="grid grid-cols-4">
-                      <span className="text-sm text-muted-foreground col-span-1">Year:</span>
-                      <span className="text-sm font-medium col-span-3">{scholar.admissionYear}</span>
+                      <span className="text-sm text-muted-foreground col-span-2">Orcid:</span>
+                      <span className="text-sm font-medium col-span-2">{scholar.orcid}</span>
                     </div>
                     <div className="grid grid-cols-4">
-                      <span className="text-sm text-muted-foreground col-span-1">Area:</span>
-                      <span className="text-sm font-medium col-span-3">{scholar.researchArea}</span>
+                      <span className="text-sm text-muted-foreground col-span-2">ResearchArea:</span>
+                      <span className="text-sm font-medium col-span-2">{scholar.areaofresearch
+                      }</span>
                     </div>
                   </div>
                 </div>
               </div>
-              
               <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Users className="h-4 w-4" /> DC Committee Members
-                  </h3>
-                  <div className="bg-secondary/50 p-4 rounded-md">
-                    <ul className="space-y-2">
-                      {dcMembers.map((member, index) => (
-                        <li key={index} className="text-sm">
-                          {member}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+  <div>
+    <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+      <Users className="h-4 w-4" /> DC Committee Members
+    </h3>
+    <div className="bg-secondary/50 p-4 rounded-md">
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      ) : dcMembers && Object.keys(dcMembers).length > 0? (
+        <ul className="space-y-2">
+          {/* Display PhD Supervisor */}
+          <div className="grid grid-cols-4">
+          <span className="text-sm text-muted-foreground col-span-2"> PhD Supervisor:</span>
+          <span className="text-sm font-medium col-span-2 ">{dcMembers.phdSupervisorName}</span>
+          </div>
+
+          {/* Display DC Chair */}
+          {/* <li className="text-sm font-semibold"> */}
+            {/* DC Chair: {dcMembers.dcChairName}{" "} */}
+            {/* <span className="text-muted-foreground">({dcMembers.dcChairEmail})</span> */}
+          {/* </li> */}
+          <div className="grid grid-cols-4">
+          <span className="text-sm text-muted-foreground col-span-2"> DC Chair:</span>
+          <span className="text-sm font-medium col-span-2 ">{dcMembers.dcChairName}</span>
+          </div>
+
+          {/* Display Other DC Members */}
+          {dcMembers.members.length > 0 ? (
+            dcMembers.members.map((member, index) => (
+              <div className="grid grid-cols-4">
+              <span className="text-sm text-muted-foreground col-span-2">
+                DC Member:
+              </span>
+            <span className="text-sm font-medium col-span-2 ">{member.name}</span>
+            </div>
+            ))
+          ) : (
+            <li className="text-sm text-muted-foreground">No other DC members assigned.</li>
+          )}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">No DC members assigned yet.</p>
+      )}
+    </div>
+  </div>
                 
-                {/* <div>
-                  <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" /> Important Dates
-                  </h3>
-                  <div className="bg-secondary/50 p-4 rounded-md space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Admission Date:</span>
-                      <span className="text-sm font-medium">July 15, {scholar.admissionYear}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Next DC Meeting:</span>
-                      <span className="text-sm font-medium">August 10, 2023</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Submission Deadline:</span>
-                      <span className="text-sm font-medium">December 05, 2023</span>
-                    </div>
-                  </div> */}
-                {/* </div> */}
               </div>
             </div>
           </TabsContent>
           
-          {/* Courses Tab */}
-          <TabsContent value="courses" className="pt-4">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" /> Coursework
-                </h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-secondary/70">
-                        <th className="px-4 py-2 text-left text-sm font-medium">Course Code</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium">Course Name</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium">Credits</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium">Grade</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {coursework.map((course, index) => (
-                        <tr key={index} className="border-b border-border">
-                          <td className="px-4 py-3 text-sm">{course.code}</td>
-                          <td className="px-4 py-3 text-sm">{course.name}</td>
-                          <td className="px-4 py-3 text-sm">{course.credits}</td>
-                          <td className="px-4 py-3 text-sm font-medium">{course.grade}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <Clipboard className="h-4 w-4" /> Course Progress Summary
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="bg-secondary/50 p-4 rounded-md text-center">
-                    <div className="text-2xl font-semibold">11</div>
-                    <div className="text-sm text-muted-foreground">Total Credits</div>
-                  </div>
-                  <div className="bg-secondary/50 p-4 rounded-md text-center">
-                    <div className="text-2xl font-semibold">3</div>
-                    <div className="text-sm text-muted-foreground">Courses Completed</div>
-                  </div>
-                  <div className="bg-secondary/50 p-4 rounded-md text-center">
-                    <div className="text-2xl font-semibold">A-</div>
-                    <div className="text-sm text-muted-foreground">CGPA</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
+         
           
           {/* Publications Tab */}
-          <TabsContent value="publications" className="pt-4">
-            <div className="space-y-4">
-              {publications.map((pub, index) => (
-                <div key={index} className="bg-secondary/50 p-4 rounded-md">
-                  <h3 className="font-medium">{pub.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {pub.journal || pub.conference} ({pub.year})
-                  </p>
-                  <div className="mt-2">
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                      {pub.journal ? "Journal" : "Conference"}
-                    </Badge>
-                    <a href={pub.link} className="text-sm text-primary ml-2 hover:underline">
-                      View Publication
-                    </a>
-                  </div>
-                </div>
-              ))}
-              
-              {publications.length === 0 && (
-                <div className="text-center py-6">
-                  <p className="text-muted-foreground">No publications recorded yet.</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
+            <TabsContent value="publications">
+                   <div className="space-y-4">
+                     {publications.length > 0 ? (
+                       publications.map((pub, index) => (
+                         <div key={index} className="bg-secondary/50 p-4 rounded-md relative">
+                          <p className="absolute top-5 right-4 text-sm text-muted-foreground">
+                            {pub.dateOfSubmission.join("-")}
+                            </p>
+                           <h3 className="font-medium">{pub.title}</h3>
+                           <p className="text-sm text-muted-foreground mt-1">
+                             {pub.publishername} 
+                           </p>
+                           {/* <p className="text-sm text-muted-foreground">DOI: {pub.doi}</p> */}
+                           {/* <p className="text-sm text-muted-foreground">Status: {pub.status}</p> */}
+                           <div className="mt-2 flex justify-between items-center w-full">
+                           <div className="flex gap flex-wrap">
+                             <Badge variant="outline" className="bg-white-1000 text-black-800 mx-1">
+                               {pub.indexing}
+                             </Badge>
+                             <Badge variant="outline" className="bg-white-100 text-white-800 mx-2">
+                               {pub.publicationType}
+                             </Badge>
+                             <Badge variant="outline" 
+                             className={` ${
+                              pub.status === "Editorial Revision"
+                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                               : pub.status === "Submitted"
+                               ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+                               : pub.status === "Accepted"
+                                 ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                 : pub.status === "Published"
+                                 ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                 : "bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                                 }`}>
+                                  {pub.status}
+                                  </Badge>
+                                  </div>
+
+                             <a href={`https://doi.org/${pub.doi}`}   target="_blank" rel="noopener noreferrer" className="text-sm text-primary ml-2 hover:underline">
+                               View Publication
+                             </a>
+                           </div>
+                         </div>
+                       ))
+                     ) : (
+                       <div className="text-center py-6">
+                         <p className="text-muted-foreground">No publications recorded yet.</p>
+                       </div>
+                     )}
+                   </div>
+                 </TabsContent>
           
           {/* Comprehensive Exam Tab */}
-          <TabsContent value="comprehensive" className="pt-4">
-            <div className="space-y-6">
-              <div className="bg-secondary/50 p-4 rounded-md">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-medium flex items-center gap-2">
-                    <ClipboardCheck className="h-4 w-4" /> Comprehensive Exam Status
-                  </h3>
-                  <Badge 
-                    variant="outline" 
-                    className={`
-                      ${comprehensiveExam.status === 'Completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : ''}
-                      ${comprehensiveExam.status === 'Scheduled' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' : ''}
-                      ${comprehensiveExam.status === 'Pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300' : ''}
-                    `}
-                  >
-                    {comprehensiveExam.status}
-                  </Badge>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="grid grid-cols-4">
-                    <span className="text-sm text-muted-foreground col-span-1">Date:</span>
-                    <span className="text-sm font-medium col-span-3">{comprehensiveExam.date}</span>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <span className="text-sm text-muted-foreground block mb-2">Evaluators:</span>
-                    <div className="flex flex-wrap gap-2">
-                      {comprehensiveExam.evaluators.map((evaluator, index) => (
-                        <Badge key={index} variant="secondary" className="font-normal">
-                          {evaluator}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <span className="text-sm text-muted-foreground block mb-2">Evaluation Topics:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {comprehensiveExam.topics.map((topic, index) => (
-                        <div key={index} className="flex items-start gap-2">
-                          <div className="bg-primary/10 p-1 rounded-full mt-0.5">
-                            <FileText className="h-3 w-3 text-primary" />
-                          </div>
-                          <span className="text-sm">{topic}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
+          
           
           {/* SWAYAM Courses Tab */}
+          {/* import { parseISO, isBefore } from "date-fns"; // Importing date-fns for date comparisons */}
           <TabsContent value="swayam" className="pt-4">
-            <div className="space-y-4">
-              {swayamCourses.map((course, index) => (
-                <div key={index} className="bg-secondary/50 p-4 rounded-md">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{course.name}</h3>
-                    <Badge 
-                      variant="outline" 
-                      className={course.status === 'Completed' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
-                        : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
-                      }
-                    >
-                      {course.status}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Platform: {course.platform}
-                  </p>
-                  {/* {course.certificate && (
-                    <div className="mt-2">
-                      <a href="#" className="text-sm text-primary hover:underline">
-                        View Certificate
-                      </a>
-                    </div>
-                  )} */}
-                </div>
-              ))}
-              
-              {swayamCourses.length === 0 && (
-                <div className="text-center py-6">
-                  <p className="text-muted-foreground">No SWAYAM courses enrolled yet.</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
+             <div className="space-y-4">
+               {swayamCourses.map((course, index) => {
+                const courseDate = course.endDate;// Convert course date to Date object
+                const currentDate = new Date();
+                const options = { month: 'short', day: 'numeric', year: 'numeric' };
+                const formattedDate = currentDate.toLocaleDateString('en-US', options);
+                
+                 const isCompleted = isBefore(courseDate, formattedDate);
+                 console.log(courseDate) // Check if course date is before today
+               return (
+                  <div key={index} className="bg-secondary/50 p-4 rounded-md">
+                      <div className="flex justify-between items-center">
+                         <h3 className="font-medium">{course.courseName}</h3>
+                          <Badge   variant="outline"
+                           className={
+                              isCompleted
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                              : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
+                            }
+                             >
+                              {isCompleted ? "Completed" : "In Progress"}
+                               </Badge>
+                                </div>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                       Duration: {course.duration}
+                                        </p>
+                 </div>
+      );
+    })}
+
+    {swayamCourses.length === 0 && (
+      <div className="text-center py-6">
+        <p className="text-muted-foreground">No SWAYAM courses enrolled yet.</p>
+      </div>
+    )}
+  </div>
+</TabsContent>
+
         </Tabs>
       </CardContent>
     </Card>

@@ -227,9 +227,10 @@ const Exam = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               examId: selectedExam.id,
+              examName: selectedExam.name,
               studentEmail: currentStudent.email,
               specializedSyllabi: formattedSyllabi,
-              status: 'SUBMITTED',
+              status: 'Submitted',
               shift: selectedExam.shift
             })
           }
@@ -246,10 +247,11 @@ const Exam = () => {
             examId: selectedExam.id,
             studentEmail: currentStudent.email,
             specializedSyllabi: formattedSyllabi,
-            status: 'SUBMITTED',
+            status: 'Submitted',
             shift: selectedExam.shift
           })
         })
+        
         if (!response.ok) throw new Error('Failed to submit application')
 
         toast.success(`Successfully applied for ${selectedExam.examName}`)
@@ -305,9 +307,9 @@ const Exam = () => {
 
   // ------------------ Filter Applications by Status ------------------
   const draftApplications = applications.filter((a) => a.status === 'DRAFT')
-  const submittedApplications = applications.filter((a) => a.status === 'SUBMITTED')
-  const approvedApplications = applications.filter((a) => a.status === 'APPROVED')
-  const rejectedApplications = applications.filter((a) => a.status === 'REJECTED')
+  const submittedApplications = applications.filter((a) => a.status === 'Submitted')
+  const approvedApplications = applications.filter((a) => a.status === 'Approved')
+  const rejectedApplications = applications.filter((a) => a.status === 'Rejected')
 
   // ------------------ Student Results Logic ------------------
   // const [selectedSemester, setSelectedSemester] = useState('')

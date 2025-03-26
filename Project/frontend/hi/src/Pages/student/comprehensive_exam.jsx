@@ -633,7 +633,7 @@ const Exam = () => {
               <CardHeader>
                 <CardTitle>My Exam Results</CardTitle>
                 <CardDescription>
-                  View your comprehensive exam results by semester.
+                  View your comprehensive exam results.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -815,7 +815,7 @@ const Exam = () => {
             <DialogHeader>
               <DialogTitle>Application Details</DialogTitle>
               <DialogDescription>
-                View the specialized syllabi and other details of this application.
+                View the specialized syllabus and other details of this application.
               </DialogDescription>
             </DialogHeader>
             {selectedRequest && (
@@ -842,14 +842,14 @@ const Exam = () => {
 
                 {/* Specialized Syllabi */}
                 <div>
-                  <strong>Specialized Syllabi:</strong>
+                  <strong>Specialized Syllabus:</strong>
                   <ul className="list-disc list-inside">
                     {selectedRequest.specializedSyllabi && selectedRequest.specializedSyllabi.length > 0 ? (
                       selectedRequest.specializedSyllabi.map((s, index) => (
                         <li key={index}>{typeof s === 'object' ? s.content : s}</li>
                       ))
                     ) : (
-                      <li>No syllabi provided.</li>
+                      <li>No syllabus provided.</li>
                     )}
                   </ul>
                 </div>

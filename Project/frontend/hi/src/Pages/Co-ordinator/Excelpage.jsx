@@ -205,18 +205,14 @@ const UploadExcel = () => {
       </li>
       <li className="flex items-start gap-2">
         <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">2</span>
-        <span>Column names should be **exactly** as written (case-sensitive).</span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">3</span>
         <span>All columns must be filled—empty values may cause errors.</span>
       </li>
       <li className="flex items-start gap-2">
-        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">4</span>
+        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">3</span>
         <span>Accepted file formats: <strong>.xlsx, .xls, .csv</strong> (Max size: 5MB).</span>
       </li>
       <li className="flex items-start gap-2">
-        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">5</span>
+        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">4</span>
         <span>After uploading, verify the student-guide list displayed.</span>
       </li>
     </ul>

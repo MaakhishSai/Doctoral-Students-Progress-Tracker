@@ -268,7 +268,7 @@ const DCMeetings = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">DC Meetings</h1>
-            <p className="text-muted-foreground">Manage your DC meetings and submissions</p>
+            <p className="text-muted-foreground">Manage your DC minutes submission</p>
           </div>
 
           <div className="flex items-center gap-4 mt-4 sm:mt-0 w-full sm:w-auto">
@@ -294,7 +294,7 @@ const DCMeetings = () => {
             <Dialog open={isNewMeetingOpen} onOpenChange={setIsNewMeetingOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#6A5AE0] hover:bg-[#A89FE7] transition-colors">
-                  <Plus className="mr-2 h-4 w-4" /> New Meeting
+                  <Plus className="mr-2 h-4 w-4" /> New Minutes
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px] backdrop-blur-sm bg-white/90 border border-white/40">
@@ -361,7 +361,7 @@ const DCMeetings = () => {
                     className="bg-[#6A5AE0] hover:bg-[#A89FE7] transition-colors"
                     onClick={() => handleSubmit()}
                   >
-                    Create Meeting
+                   Upload
                   </Button>
                 </div>
               </DialogContent>

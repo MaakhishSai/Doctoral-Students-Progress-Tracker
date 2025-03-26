@@ -93,7 +93,7 @@ const Compre = () => {
   };
 
   const handleConfirmAction = () => {
-    const newStatus = actionType === 'approve' ? 'APPROVED' : 'REJECTED';
+    const newStatus = actionType === 'approve' ? 'Approved' : 'Rejected';
     axios.put(`http://localhost:8080/api/applications/${selectedRequest.id}`, {
       status: newStatus
     })
@@ -271,7 +271,7 @@ const Compre = () => {
 
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <div className="relative">
+                          {/* <div className="relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                               type="text"
@@ -280,7 +280,7 @@ const Compre = () => {
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
                             />
-                          </div>
+                          </div> */}
                         </div>
                       </div>
 

@@ -1085,7 +1085,7 @@ const ExamAnnouncement = () => {
                       disabled={!file || isUploading}
                       className="w-full sm:w-auto"
                     >
-                      {isUploading ? "Processing..." : "Process Excel Data"}
+                      {isUploading ? "Processing..." : "Upload Results"}
                     </Button>
                   </div>
                 </div>
@@ -1135,6 +1135,41 @@ const ExamAnnouncement = () => {
                 )}
               </>
             )}
+            {!uploadSuccess && (
+          <div className="bg-muted/50 rounded-xl p-6 border border-border">
+            <h3 className="text-lg font-medium mb-4">Instructions</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+      Please ensure that your Excel file strictly follows the format below. The columns must be in the exact order specified.
+    </p>
+
+    {/* Required Format */}
+    <div className="mb-4 p-4 bg-primary/10 border border-primary rounded-lg">
+      <p className="font-semibold text-primary mb-2">📂 Required Excel Format:</p>
+      <pre className="text-sm text-muted-foreground bg-gray-100 p-3 rounded-md overflow-auto">
+        | Student Roll | Student Name | Core Marks | Specialisation Marks |
+      </pre>
+    </div>
+
+    <ul className="space-y-2 text-sm text-muted-foreground">
+      <li className="flex items-start gap-2">
+        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">1</span>
+        <span>Ensure your Excel file contains <strong>exactly 4 columns</strong> in the order shown above.</span>
+      </li>
+      <li className="flex items-start gap-2">
+        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">2</span>
+        <span>All columns must be filled—empty values may cause errors.</span>
+      </li>
+      <li className="flex items-start gap-2">
+        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">3</span>
+        <span>Accepted file formats: <strong>.xlsx, .xls, .csv</strong> (Max size: 5MB).</span>
+      </li>
+      <li className="flex items-start gap-2">
+        <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">4</span>
+        <span>After uploading, verify the student-guide list displayed.</span>
+      </li>
+    </ul>
+          </div>
+        )} 
           </TabsContent>
         </Tabs>
 

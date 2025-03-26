@@ -11,34 +11,6 @@ const Dashboardc= () => {
   // Sample data for DC meetings only
   const navigate= useNavigate();
 
-  // Sample data for pending requests
-  // const pendingRequests = [
-  //   { 
-  //     id: 1, 
-  //     type: "Course Request", 
-  //     title: "Advanced Machine Learning", 
-  //     scholar: "Rahul Kumar",
-  //     date: "feb 28, 2025",
-  //     status: "Pending"
-  //   },
-  //   { 
-  //     id: 2, 
-  //     type: "Publication Submission", 
-  //     title: "Neural Networks for Medical Imaging", 
-  //     scholar: "Priya Singh",
-  //     date: "feb 27, 2025",
-  //     status: "Pending"
-  //   },
-  //   { 
-  //     id: 3, 
-  //     type: "Course Request", 
-  //     title: "Deep Learning Fundamentals", 
-  //     scholar: "Amit Patel",
-  //     date: "feb 16, 2025",
-  //     status: "Pending"
-  //   },
-  // ];
-
 
   return (
     <PageLayout>
@@ -83,12 +55,12 @@ const Dashboardc= () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm mb-4">
+              <p className="text-sm mb-8">
               Announce exams, review student requests, and upload/view examination results.
               </p>
               <CardFooter className="pt-1">
                 <Button variant="ghost" size="sm" className="w-full justify-between" onClick={()=>navigate('/cocompre')}>
-                  <span>Go to exam dahboard</span>
+                  <span>Go to Exam Dashboard</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </CardFooter>

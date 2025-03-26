@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("api/students/**").permitAll()
                         .requestMatchers("/api/dc-meetings/**").permitAll()
                         .requestMatchers("/api/students/").permitAll()
+                        .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/api/user/update-profile").permitAll()
                         .requestMatchers("/api/courses/all").permitAll()
                         .requestMatchers("/api/exams/**").permitAll()

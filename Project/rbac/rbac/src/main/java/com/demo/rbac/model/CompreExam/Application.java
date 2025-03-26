@@ -28,11 +28,16 @@ public class Application {
 
     private String shift;
 
-    private String comment;
-
     // ONE Application -> MANY Syllabi
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<SpecializedSyllabus> specializedSyllabi = new ArrayList<>();
 
+    // In Application.java
+    private String guideComment;
+
+    private Long guideId;
+
+    private String studentRoll;
+    private String studentName;
 }

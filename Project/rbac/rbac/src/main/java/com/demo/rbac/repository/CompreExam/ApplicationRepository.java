@@ -11,4 +11,5 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findByStudentEmail(String email);
 
+    List<Application> findByGuideId(Long guideId);
 }

@@ -3,7 +3,6 @@ import {
   Calendar,
   Filter,
   Pencil,
-  // Trash2, // REMOVED
   Plus,
   Info,
   ClipboardCheck,
@@ -11,7 +10,7 @@ import {
   XCircle,
   Clock,
   AlignLeft,
-  Eye
+  Eye,
 } from "lucide-react";
 import FileUpload from "@/components/Co-ordinator/FileUpload";
 import DashboardLayout from "@/components/Co-ordinator/layout/Layout";
@@ -44,7 +43,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-  TabsContent
+  TabsContent,
 } from "@/components/ui/tabs";
 import {
   Select,
@@ -55,6 +54,13 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+
+function formatTimestamp(timestamp) {
+  const [year, month, day, hour, minute, second, _] = timestamp;
+  const date = new Date(year, month, day);
+  return date.toLocaleString(); // This will format the date and time according to the user's locale
+}
 
 const ExamAnnouncement = () => {
   // Common state
@@ -97,10 +103,16 @@ const ExamAnnouncement = () => {
     examVenue: "",
     examDuration: "",
     examShift: "",
-    broadcast: false
+    broadcast: false,
   });
   const [Results, setResults] = useState([]);
   const [isViewing, setIsViewing] = useState(false);
+
+  // ============ COMMENTS TAB STATE ============
+  const [showCommentsDialog, setShowCommentsDialog] = useState(false);
+  const [selectedExamForComments, setSelectedExamForComments] = useState(null);
+  const [comments, setComments] = useState([]);
+
 
   // ============ UPLOAD RESULTS LOGIC ============
   const handleUpload = useCallback(async () => {
@@ -189,51 +201,16 @@ const ExamAnnouncement = () => {
         const examData = await examRes.json();
         setExams(examData);
 
-        // 2) Mock requests data
-        const mockRequests = [
-          {
-            id: "REQ001",
-            studentName: "Rahul Kumar",
-            rollNumber: "P220780CS",
-            examName: "Comprehensive Exam",
-            status: "approved",
-            approvalDate: "2025-01-15",
-          },
-          {
-            id: "REQ002",
-            studentName: "Priya Singh",
-            rollNumber: "P230780CS",
-            examName: "Comprehensive Exam",
-            status: "approved",
-            approvalDate: "2025-01-18",
-          },
-          {
-            id: "REQ003",
-            studentName: "Amit Patel",
-            rollNumber: "P210780CS",
-            examName: "Comprehensive Exam",
-            status: "pending",
-            approvalDate: "",
-          },
-          {
-            id: "REQ004",
-            studentName: "Sunita Reddy",
-            rollNumber: "P220545CS",
-            examName: "Comprehensive Exam",
-            status: "rejected",
-            approvalDate: "2025-01-10",
-          },
-          {
-            id: "REQ005",
-            studentName: "Rajesh Verma",
-            rollNumber: "P230545CS",
-            examName: "Comprehensive Exam",
-            status: "approved",
-            approvalDate: "2025-01-20",
-          },
-        ];
-        setRequests(mockRequests);
-        setFilteredRequests(mockRequests);
+        // 2) Fetch student applications from backend
+        const appRes = await fetch("http://localhost:8080/api/applications/all", {
+          method: "GET",
+        });
+        if (!appRes.ok) {
+          throw new Error("Failed to fetch student applications");
+        }
+        const appData = await appRes.json();
+        setRequests(appData);
+        setFilteredRequests(appData);
 
         setLoading(false);
       } catch (error) {
@@ -246,7 +223,6 @@ const ExamAnnouncement = () => {
   }, []);
 
   // ============ FORM + EXAM CRUD ============
-
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
@@ -394,11 +370,11 @@ const ExamAnnouncement = () => {
       prevRequests.map((request) =>
         request.id === selectedRequest.id
           ? {
-              ...request,
-              status: newStatus,
-              approvalDate:
-                newStatus === "pending" ? "" : new Date().toISOString().split("T")[0],
-            }
+            ...request,
+            status: newStatus,
+            approvalDate:
+              newStatus === "pending" ? "" : new Date().toISOString().split("T")[0],
+          }
           : request
       )
     );
@@ -418,6 +394,28 @@ const ExamAnnouncement = () => {
     setNewStatus(request.status);
     setIsStatusDialogOpen(true);
   };
+
+  // ============ COMMENTS TAB LOGIC ============
+  // ADDED: Function to open comments dialog and fetch comments
+  const openCommentsDialog = async (exam) => {
+    setSelectedExamForComments(exam);
+    setShowCommentsDialog(true);
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/exams/${exam.id}/comments`, {
+        method: "GET",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch comments");
+      }
+      const data = await res.json();
+      setComments(data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load comments");
+    }
+  };
+
 
   // ============ HELPER FUNCTIONS ============
   const getStatusIcon = (status) => {
@@ -463,7 +461,6 @@ const ExamAnnouncement = () => {
   };
 
   // ============ RENDER ============
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -487,8 +484,9 @@ const ExamAnnouncement = () => {
           Manage comprehensive exams and view student requests for doctoral students
         </p>
 
+        {/* Updated Tabs: added "Comments" tab. */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="announcements" className="text-sm">
               <Calendar className="mr-2 h-4 w-4" />
               Exam Announcements
@@ -496,6 +494,10 @@ const ExamAnnouncement = () => {
             <TabsTrigger value="requests" className="text-sm">
               <ClipboardCheck className="mr-2 h-4 w-4" />
               Approved Exam Requests
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="text-sm">
+              <AlignLeft className="mr-2 h-4 w-4" />
+              View Comments
             </TabsTrigger>
             <TabsTrigger value="upload" className="text-sm">
               <ClipboardCheck className="mr-2 h-4 w-4" />
@@ -506,7 +508,6 @@ const ExamAnnouncement = () => {
           {/* Exams Announcements Tab */}
           <TabsContent value="announcements" className="pt-4">
             <div className="bg-white rounded-xl mb-4 animate-slide-up">
-              {/* Removed the search bar div for announcements */}
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
@@ -828,7 +829,6 @@ const ExamAnnouncement = () => {
 
           {/* Approved Requests Tab */}
           <TabsContent value="requests" className="pt-4">
-            {/* The search for requests remains unchanged */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-border mb-8 animate-slide-up">
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                 <div className="relative w-full md:w-72">
@@ -980,6 +980,89 @@ const ExamAnnouncement = () => {
             </Dialog>
           </TabsContent>
 
+          {/* Comments Tab */}
+          <TabsContent value="comments" className="pt-4">
+            <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden animate-fade-in">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[400px]">Exam Name</TableHead>
+                      <TableHead className="w-[200px]">Exam Date</TableHead>
+                      <TableHead className="w-[300px]">Application Deadline</TableHead>
+                      <TableHead className="w-[200px] text-center">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {exams.length > 0 ? (
+                      exams.map((exam) => (
+                        <TableRow key={exam.id} className="group">
+                          <TableCell className="w-[400px] font-medium">{exam.name}</TableCell>
+                          <TableCell className="w-[200px]">
+                            {formatDate(exam.examDate)}
+                          </TableCell>
+                          <TableCell className="w-[300px]">
+                            {formatDate(exam.deadline)}
+                          </TableCell>
+                          <TableCell className="w-[200px] items-center">
+                            <div className="flex justify-center items-center">
+                              <Button onClick={() => openCommentsDialog(exam)}>
+                                View Comments
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-10">
+                          <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <Calendar className="h-10 w-10 mb-2" />
+                            <h3 className="text-lg font-medium">No exams found</h3>
+                            <p className="text-sm">There are no exams to display.</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+            {/* ADDED: Dialog to display exam comments */}
+            <Dialog open={showCommentsDialog} onOpenChange={setShowCommentsDialog}>
+              <DialogContent className="sm:max-w-[550px]">
+                <DialogHeader>
+                  <DialogTitle>
+                    Comments for {selectedExamForComments?.name}
+                  </DialogTitle>
+                  <DialogDescription>
+                    These are the comments submitted by students.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  {comments.length > 0 ? (
+                    comments.map((c) => (
+                      <div key={c.id} className="border p-2 rounded-md">
+                        <p className="font-medium">{c.studentEmail}</p>
+                        <p>{c.comment}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatTimestamp(c.timestamp)}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground">
+                      No comments found.
+                    </p>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button onClick={() => setShowCommentsDialog(false)}>Close</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </TabsContent>
+
           {/* Upload Results Tab */}
           <TabsContent value="upload" className="space-y-8">
             {!uploadSuccess ? (
@@ -1049,6 +1132,37 @@ const ExamAnnouncement = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Comments Dialog */}
+        <Dialog open={showCommentsDialog} onOpenChange={setShowCommentsDialog}>
+            <DialogContent className="sm:max-w-[550px]">
+              <DialogHeader>
+                <DialogTitle>Comments for {selectedExamForComments?.name}</DialogTitle>
+                <DialogDescription>
+                  These are the comments submitted by students.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                {comments.length > 0 ? (
+                  comments.map((c) => (
+                    <div key={c.id} className="border p-2 rounded-md">
+                      <p className="font-medium">{c.studentEmail}</p>
+                      <p>{c.comment}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(c.timestamp).toLocaleString()}
+                      </p> 
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground">No comments found.</p>
+                )}
+              </div>
+              <DialogFooter>
+                <Button onClick={() =>
+                  setShowCommentsDialog(false)}>Close</Button>
+              </DialogFooter>
+            </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

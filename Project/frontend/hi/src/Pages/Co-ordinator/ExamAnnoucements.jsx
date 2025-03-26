@@ -498,11 +498,11 @@ const ExamAnnouncement = () => {
             </TabsTrigger>
             <TabsTrigger value="requests" className="text-sm">
               <ClipboardCheck className="mr-2 h-4 w-4" />
-              Approved Exam Requests
+              Exam Requests
             </TabsTrigger>
             <TabsTrigger value="comments" className="text-sm">
               <AlignLeft className="mr-2 h-4 w-4" />
-              View Comments
+              Exam Comments
             </TabsTrigger>
             <TabsTrigger value="upload" className="text-sm">
               <ClipboardCheck className="mr-2 h-4 w-4" />
@@ -881,7 +881,7 @@ const ExamAnnouncement = () => {
                           <TableCell>{request.studentRoll}</TableCell>
                           <TableCell>{request.shift}</TableCell>
                           <TableCell>{getStatusBadge(request.status)}</TableCell>
-                          <TableCell>{formatDate(request.approvalDate)}</TableCell>
+                          <TableCell>{formatTimestamp(request.dateApplied)}</TableCell>
                         </TableRow>
                       ))
                     ) : (

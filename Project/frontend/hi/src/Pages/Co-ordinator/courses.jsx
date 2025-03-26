@@ -303,7 +303,7 @@ const SwayamCourseApprovals = () => {
                   disabled={!file || isUploading}
                   className="w-full sm:w-auto"
                 >
-                  {isUploading ? "Processing..." : "Process Excel Data"}
+                  {isUploading ? "Processing..." : "Upload Courses"}
                 </Button>
               </div>
             </div>
@@ -313,7 +313,7 @@ const SwayamCourseApprovals = () => {
             <div className="mt-6">
               <Button onClick={handleViewStudents} className="flex items-center gap-2">
                 <Eye className="h-4 w-4" />
-                View Course Details
+                View Courses
               </Button>
             </div>
             {isViewing && courses.length > 0 && (

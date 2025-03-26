@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Layout from '@/components/student/layout/Layout'
+import axios from "axios"
 import {
   Card,
   CardContent,
@@ -70,9 +71,11 @@ const Exam = () => {
     setSelectedRequest(request)
     setDetailsOpen(true)
   };
+  const [results, setResults] = useState([]);
+  const [loding, setLoading] = useState(false);
 
   // Fetched data
-  const [currentStudent, setCurrentStudent] = useState(null)
+  const [currentStudent, setCurrentStudent] = useState([])
   const [announcements, setAnnouncements] = useState([])
   const [applications, setApplications] = useState([])
 
@@ -119,8 +122,9 @@ const Exam = () => {
         setCurrentStudent({
           name: profile.name,
           email: profile.email,
-          rollNo: profile.rollNumber
+          rollNo: profile.rollNumber,
         })
+        // console.log(currentStudent);
       } catch (error) {
         console.error(error)
         toast.error('Failed to fetch user profile.')
@@ -128,10 +132,33 @@ const Exam = () => {
     }
     fetchUserInfo()
   }, [])
+  useEffect(() => {
+    const fetchResults = async () => {
+      setLoading(true);
+      try {
+        console.log(currentStudent.rollNo);
+        const res = await axios.get(`http://localhost:8080/api/results/${currentStudent.rollNo}`);
+        
+        // setResults(res.data); 
+        setResults(Array.isArray(res.data) ? res.data : [res.data]);
+        console.log("Updated results:", res.data); // ✅ Logs correct API response
+      } catch (error) {
+        console.error("Failed to fetch results:", error);
+        toast.error("Failed to fetch results.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    // if (currentStudent.rollNo) {
+      fetchResults();
+    // }
+  }, [currentStudent]);
+  
 
   // ------------------ Fetch Announcements & Applications ------------------
   useEffect(() => {
-    if (!currentStudent) return // Wait until currentStudent is available
+    if (!currentStudent) return; // Wait until currentStudent is available
 
     const fetchData = async () => {
       try {
@@ -283,16 +310,16 @@ const Exam = () => {
   const rejectedApplications = applications.filter((a) => a.status === 'REJECTED')
 
   // ------------------ Student Results Logic ------------------
-  const [selectedSemester, setSelectedSemester] = useState('')
-  const semesterGroups = studentResults.reduce((acc, result) => {
-    if (!acc[result.semester]) acc[result.semester] = []
-    acc[result.semester].push(result)
-    return acc
-  }, {})
-  const semesters = Object.keys(semesterGroups)
-  const displaySemester =
-    selectedSemester || (semesters.length > 0 ? semesters[0] : '')
-  const displayResults = semesterGroups[displaySemester] || []
+  // const [selectedSemester, setSelectedSemester] = useState('')
+  // const semesterGroups = studentResults.reduce((acc, result) => {
+  //   if (!acc[result.semester]) acc[result.semester] = []
+  //   acc[result.semester].push(result)
+  //   return acc
+  // }, {})
+  // const semesters = Object.keys(semesterGroups)
+  // const displaySemester =
+    // selectedSemester || (semesters.length > 0 ? semesters[0] : '')
+  // const displayResults = semesterGroups[displaySemester] || []
 
   // If profile not loaded yet
   if (!currentStudent) {
@@ -302,6 +329,10 @@ const Exam = () => {
       </Layout>
     )
   }
+  useEffect(() => {
+    console.log("Updated results:", results); // ✅ Logs updated state
+    console.log("Results length:", results.length); // ✅ Now `results.length` is defined
+  }, [results]);
 
   // ------------------ Render ------------------
   return (
@@ -618,29 +649,11 @@ const Exam = () => {
                         <span className="ml-2">{currentStudent.rollNo}</span>
                       </div>
                     </div>
-                    {semesters.length > 0 && (
-                      <div className="w-full md:w-64">
-                        <Select
-                          value={displaySemester}
-                          onValueChange={setSelectedSemester}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select semester" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {semesters.map((semester) => (
-                              <SelectItem key={semester} value={semester}>
-                                {semester}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+                    
                   </div>
                 </div>
 
-                {displayResults.length > 0 ? (
+                {results.length > 0 ? (
                   <div className="space-y-6">
                     <div className="rounded-md border">
                       <Table>
@@ -653,26 +666,22 @@ const Exam = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {displayResults.map((result) => (
+                          {results.map((result) => (
                             <TableRow key={result.id}>
                               <TableCell className="text-right">
-                                {result.coreMarks}
+                                {result.core}
                               </TableCell>
                               <TableCell className="text-right">
-                                {result.specializationMarks}
+                                {result.specialization}
                               </TableCell>
                               <TableCell className="text-right">
-                                {result.totalMarks}
+                                {result.core+result.specialization}
                               </TableCell>
                               <TableCell>
-                                <Badge
-                                  variant={
-                                    result.status === 'Pass'
-                                      ? 'default'
-                                      : 'destructive'
-                                  }
-                                >
-                                  {result.status}
+                              <Badge
+                              className={result.core + result.specialization >= 35 ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}
+                              >
+                                {result.core + result.specialization >= 35 ? 'Pass' : 'Fail'}
                                 </Badge>
                               </TableCell>
                             </TableRow>
@@ -684,7 +693,7 @@ const Exam = () => {
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">
-                      No results available for {displaySemester}.
+                      No results available 
                     </p>
                   </div>
                 )}

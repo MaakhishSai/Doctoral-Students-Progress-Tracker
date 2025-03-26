@@ -209,6 +209,7 @@ const ExamAnnouncement = () => {
           throw new Error("Failed to fetch student applications");
         }
         const appData = await appRes.json();
+        // console.log(appRes.data);
         setRequests(appData);
         setFilteredRequests(appData);
 
@@ -222,6 +223,10 @@ const ExamAnnouncement = () => {
     loadAllData();
   }, []);
 
+  useEffect(()=>{
+    console.log(filteredRequests);
+
+  },[filteredRequests]);
   // ============ FORM + EXAM CRUD ============
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target;

@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.demo.rbac.model.Results;
 import com.demo.rbac.repository.ResultsRepository;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ResultsService {
@@ -37,5 +38,8 @@ public class ResultsService {
             throw new RuntimeException("No Resultss found in the database.");
         }
         return Resultss;
+    }
+    public Optional<Results> getResultsByRollNo(String rollNo) {
+        return ResultsRepository.findById(rollNo);
     }
 }

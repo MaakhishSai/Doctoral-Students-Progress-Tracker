@@ -11,7 +11,29 @@ const Dashboardg = () => {
   const [scholars, setScholars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [meetings, setMeetings] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/coursereq/all", { withCredentials: true })
+      .then((res) => {
+        // Filter only pending requests
+        const pending = res.data.filter((request) => request.status === "Pending");
+        setPendingRequests(pending);
+      })
+      .catch((err) => console.error("Error fetching course requests:", err));
+  }, []);
 
+  // Fetch meetings for supervisor from backend
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/dc-meetings/fetch-for-supervisor", {
+        withCredentials: true,
+      })
+      .then((res) => setMeetings(res.data))
+      .catch((err) => console.error("Error fetching meetings:", err));
+  }, []);
+  console.log(pendingRequests);
   useEffect(() => {
     const fetchGuideEmail = async () => {
       try {
@@ -53,17 +75,7 @@ const Dashboardg = () => {
     fetchScholars();
   }, [guideId]);
 
-  const upcomingDCMeetings = [
-    { id: 1, title: "DC Meeting - Rahul Kumar", date: "March 12, 2025", time: "10:00 AM" },
-    { id: 2, title: "DC Meeting - Priya Singh", date: "March 10, 2025", time: "2:00 PM" },
-    { id: 3, title: "DC Meeting - Amit Patel", date: "March 15, 2025", time: "11:30 AM" },
-  ];
-
-  const pendingRequests = [
-    { id: 1, type: "Course Request", title: "Advanced Machine Learning", scholar: "Rahul Kumar", date: "Feb 28, 2025", status: "Pending" },
-    { id: 2, type: "Publication Submission", title: "Neural Networks for Medical Imaging", scholar: "Priya Singh", date: "Feb 27, 2025", status: "Pending" },
-    { id: 3, type: "Course Request", title: "Deep Learning Fundamentals", scholar: "Amit Patel", date: "Feb 16, 2025", status: "Pending" },
-  ];
+ 
 
   return (
     <PageLayout>
@@ -89,21 +101,26 @@ const Dashboardg = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="shadow-soft animate-fade-in">
             <CardHeader>
-              <CardTitle className="text-lg">Upcoming DC Meetings</CardTitle>
+              <CardTitle className="text-lg">DC Minutes Requests</CardTitle>
             </CardHeader>
             <CardContent>
-              {upcomingDCMeetings.length > 0 ? (
+              {meetings.length > 0 ? (
                 <div className="space-y-4">
-                  {upcomingDCMeetings.map((meeting) => (
+                  {meetings.slice(-4).map((meeting) => (
                     <div key={meeting.id} className="flex gap-4 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-all-200">
                       <div className="bg-primary/10 p-2 rounded-full h-fit">
                         <Clock className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-medium">{meeting.title}</h3>
+                        <h3 className="font-medium">DC Meeting - {meeting.studentEmail}</h3>
                         <div className="flex justify-between mt-1">
-                          <p className="text-sm text-muted-foreground">{meeting.date}</p>
-                          <p className="text-sm font-medium">{meeting.time}</p>
+                        <p className="text-sm text-muted-foreground">
+  {new Date(meeting.date[0], meeting.date[1] - 1, meeting.date[2]).toDateString()}
+</p>
+<p className="text-sm font-medium">
+  {`${meeting.time[0].toString().padStart(2, "0")}:${meeting.time[1].toString().padStart(2, "0")}`}
+</p>
+
                         </div>
                       </div>
                     </div>
@@ -123,7 +140,9 @@ const Dashboardg = () => {
             </CardHeader>
             <CardContent>
               {pendingRequests.length > 0 ? (
+                
                 <div className="space-y-4">
+                  
                   {pendingRequests.map((request) => (
                     <div key={request.id} className="flex gap-4 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-all-200">
                       <div className="bg-amber-100 dark:bg-amber-900/30 p-2 rounded-full h-fit">
@@ -131,13 +150,13 @@ const Dashboardg = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between">
-                          <h3 className="font-medium">{request.title}</h3>
+                          <h3 className="font-medium">{request.courseName}</h3>
                           <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">{request.status}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
-                          <span className="font-medium">{request.type}</span> from {request.scholar}
+                          <span className="font-medium">{request.type}</span> from {request.studentId}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">Submitted on {request.date}</p>
+                        {/* <p className="text-xs text-muted-foreground mt-1">Submitted on {request.date}</p> */}
                       </div>
                     </div>
                   ))}

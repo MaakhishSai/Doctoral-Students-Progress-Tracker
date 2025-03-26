@@ -105,9 +105,9 @@ const DCMeetingsg = () => {
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <CardTitle>Upcoming Meetings</CardTitle>
+                <CardTitle>DC Meeting Minutes Requests</CardTitle>
                 <CardDescription>
-                  View and manage scheduled DC meetings
+                  View and Approve the DC minutes
                 </CardDescription>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">

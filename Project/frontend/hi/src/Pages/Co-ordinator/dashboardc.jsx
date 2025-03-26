@@ -75,28 +75,7 @@ const Dashboardc= () => {
             </CardContent>
           </Card>
 
-          {/* <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="space-y-1">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">Swayam Courses</CardTitle>
-                <BookOpen className="h-5 w-5 text-phd-accent" />
-              </div>
-              <CardDescription>
-                Browse available Swayam courses
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-4">
-                Explore online courses available through the Swayam platform.
-              </p>
-              <CardFooter className="pt-1">
-                <Button variant="ghost" size="sm" className="w-full justify-between">
-                  <span>Browse Courses</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </CardFooter>
-            </CardContent>
-          </Card> */}
+          
 
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="space-y-1">

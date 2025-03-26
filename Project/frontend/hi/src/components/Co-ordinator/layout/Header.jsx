@@ -78,9 +78,9 @@ const Header= ({ studentName }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>{studentName}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              {/* <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer" onClick={()=> navigate('/profilec')}>Profile</DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator /> */}
               <DropdownMenuItem 
                 className="cursor-pointer text-destructive"
                 onClick={handleLogout}

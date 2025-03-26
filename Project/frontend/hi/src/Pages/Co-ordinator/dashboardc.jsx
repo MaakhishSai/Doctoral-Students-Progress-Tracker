@@ -10,39 +10,34 @@ import { useNavigate } from 'react-router-dom';
 const Dashboardc= () => {
   // Sample data for DC meetings only
   const navigate= useNavigate();
-  const upcomingDCMeetings = [
-    { id: 1, title: "DC Meeting - Rahul Kumar", date: "March 12, 2025", time: "10:00 AM" },
-    { id: 2, title: "DC Meeting - Priya Singh", date: "March 10, 2025", time: "2:00 PM" },
-    { id: 3, title: "DC Meeting - Amit Patel", date: "March 15, 2025", time: "11:30 AM" },
-  ];
 
   // Sample data for pending requests
-  const pendingRequests = [
-    { 
-      id: 1, 
-      type: "Course Request", 
-      title: "Advanced Machine Learning", 
-      scholar: "Rahul Kumar",
-      date: "feb 28, 2025",
-      status: "Pending"
-    },
-    { 
-      id: 2, 
-      type: "Publication Submission", 
-      title: "Neural Networks for Medical Imaging", 
-      scholar: "Priya Singh",
-      date: "feb 27, 2025",
-      status: "Pending"
-    },
-    { 
-      id: 3, 
-      type: "Course Request", 
-      title: "Deep Learning Fundamentals", 
-      scholar: "Amit Patel",
-      date: "feb 16, 2025",
-      status: "Pending"
-    },
-  ];
+  // const pendingRequests = [
+  //   { 
+  //     id: 1, 
+  //     type: "Course Request", 
+  //     title: "Advanced Machine Learning", 
+  //     scholar: "Rahul Kumar",
+  //     date: "feb 28, 2025",
+  //     status: "Pending"
+  //   },
+  //   { 
+  //     id: 2, 
+  //     type: "Publication Submission", 
+  //     title: "Neural Networks for Medical Imaging", 
+  //     scholar: "Priya Singh",
+  //     date: "feb 27, 2025",
+  //     status: "Pending"
+  //   },
+  //   { 
+  //     id: 3, 
+  //     type: "Course Request", 
+  //     title: "Deep Learning Fundamentals", 
+  //     scholar: "Amit Patel",
+  //     date: "feb 16, 2025",
+  //     status: "Pending"
+  //   },
+  // ];
 
 
   return (
@@ -55,20 +50,20 @@ const Dashboardc= () => {
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="space-y-1">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">Upload Courses</CardTitle>
+                <CardTitle className="text-xl">Swayam Courses</CardTitle>
                 <UploadCloud className="h-5 w-5 text-phd-accent" />
               </div>
               <CardDescription>
-                Upload and manage your course data
+                Upload Swayam Course and View course log
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm mb-4">
-              Import your swayam course information from Excel or CSV files.
+              Upload Swayam courses via an Excel sheet and track student course requests along with the course log.
               </p>
               <CardFooter className="pt-1">
-                <Button variant="ghost" size="sm" className="w-full justify-between">
-                  <span>Go to upload</span>
+                <Button variant="ghost" size="sm" className="w-full justify-between" onClick={()=>navigate('/Cocourses')}>
+                  <span>Go to Courses</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </CardFooter>
@@ -80,20 +75,20 @@ const Dashboardc= () => {
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="space-y-1">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">Exam Requests</CardTitle>
+                <CardTitle className="text-xl">Comprehensive Exam </CardTitle>
                 <ClipboardCheck className="h-5 w-5 text-phd-accent" />
               </div>
               <CardDescription>
-                Manage comprehensive exam requests
+                Manage comprehensive exam 
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm mb-4">
-                Submit and track your comprehensive examination requests.
+              Announce exams, review student requests, and upload/view examination results.
               </p>
               <CardFooter className="pt-1">
-                <Button variant="ghost" size="sm" className="w-full justify-between">
-                  <span>View all meetings</span>
+                <Button variant="ghost" size="sm" className="w-full justify-between" onClick={()=>navigate('/cocompre')}>
+                  <span>Go to exam dahboard</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </CardFooter>

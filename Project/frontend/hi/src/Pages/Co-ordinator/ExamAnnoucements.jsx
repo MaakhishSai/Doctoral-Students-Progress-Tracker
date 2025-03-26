@@ -868,7 +868,7 @@ const ExamAnnouncement = () => {
                     <TableRow>
                       <TableHead className="w-[200px]">Student Name</TableHead>
                       <TableHead>Roll Number</TableHead>
-                      <TableHead className="w-[300px]">Exam Name</TableHead>
+                      <TableHead className="w-[300px]">Shift</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Approval Date</TableHead>
                     </TableRow>
@@ -878,8 +878,8 @@ const ExamAnnouncement = () => {
                       filteredRequests.map((request) => (
                         <TableRow key={request.id} className="group">
                           <TableCell className="font-medium">{request.studentName}</TableCell>
-                          <TableCell>{request.rollNumber}</TableCell>
-                          <TableCell>{request.examName}</TableCell>
+                          <TableCell>{request.studentRoll}</TableCell>
+                          <TableCell>{request.shift}</TableCell>
                           <TableCell>{getStatusBadge(request.status)}</TableCell>
                           <TableCell>{formatDate(request.approvalDate)}</TableCell>
                         </TableRow>

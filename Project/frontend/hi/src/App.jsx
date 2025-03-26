@@ -20,6 +20,7 @@ import  Publicationsg from "./Pages/Guide/publication.jsx";
 import  Actions from "./Pages/Guide/coursesg.jsx"; 
 import StudentPublications from "./pages/Guide/studentpublications";
 import Compre from "./pages/Guide/compre-exam.jsx";
+import PublicationHistory from "./pages/Guide/publicationh.jsx";
 import ScholarProfiless from "./pages/Co-ordinator/ScholarProfile";
 
 // import Index2 from "./Pages/index2"; 
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/exam" element={<Exam />} />
         <Route path="/cocompre" element={<ExamAnnouncement />} />
         <Route path="/comprehensive-exam" element={<Compre />} />
+        <Route path="/publicationh/:rollNumber" element={<PublicationHistory />} />
       </Routes>
     </Router>
   );

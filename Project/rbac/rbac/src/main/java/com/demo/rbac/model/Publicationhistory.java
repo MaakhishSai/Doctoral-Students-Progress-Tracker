@@ -2,23 +2,24 @@ package com.demo.rbac.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "publications")
+@Table(name = "publicationshistory")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Publication {
+public class Publicationhistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
-    private String publishername;
+    private String publishername; // ✅ Fixed field name to match DTO
     private String journal;
     private String doi;
     private String publicationType;

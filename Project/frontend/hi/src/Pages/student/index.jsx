@@ -269,7 +269,7 @@ const Index = () => {
                                   </div>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{publication.journal}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{publication.publicationType}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{publication.publishername}</p>
                       </div>
                     ))}
                   </div>

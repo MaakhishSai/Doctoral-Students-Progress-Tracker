@@ -54,12 +54,14 @@ public class PublicationService {
     public Publication savePublication(PublicationRequest request) {
         Publication publication = new Publication();
         publication.setTitle(request.getTitle());
+        publication.setPublishername(request.getPublishername());
         publication.setJournal(request.getJournal());
         publication.setDoi(request.getDoi());
         publication.setPublicationType(request.getPublicationType());
         publication.setQuartile(request.getQuartile());
         publication.setStatus(request.getStatus());
-        publication.setSendCopyToCoordinator(request.isSendCopyToCoordinator());
+        publication.setIndexing(request.getIndexing());
+    //    / publication.setSendCopyToCoordinator(request.isSendCopyToCoordinator());
         publication.setRollNo(request.getRollNo());
         publication.setDateOfSubmission(request.getDateOfSubmission()); // ✅ Set dateOfSubmission
     

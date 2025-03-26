@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import { ExternalLink } from 'lucide-react';
 import PublicationStatus from '@/components/Guide/PublicationStatus';
 import { Button } from "@/components/ui/button";
-import PageLayout from "@/components/Guide/layout/Layout";
+import PageLayout from "@/components/layout/Layout";
+import { Link } from "react-router-dom";
+import { History } from 'lucide-react';
 
 const API_BASE_URL = "http://localhost:8080/api"; // Backend base URL
 
@@ -88,10 +90,10 @@ const StudentPublications = () => {
 
   return (
     <PageLayout>
-      <div className="page-container">
-        <div className="max-w-full mx-auto">
-          <div className="flex items-center mb-8">
-            <div className="ml-5">
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <div>
               <h2 className="text-2xl font-bold">{student.name}</h2>
               <p className="text-sm text-gray-500">Publications: {publicationCount}</p>
               <div className="flex items-center mt-1">
@@ -107,6 +109,20 @@ const StudentPublications = () => {
                 </a>
               </div>
             </div>
+            {/* <Link to="/publicationh/${student.rollNo}` className="mt-4 md:mt-0"> */}
+            <div className="flex items-center space-x-4">
+  <Button className="bg-blue-600 text-white px-4 py-2 rounded flex items-center" onClick={() => navigate(`/publicationh/${rollNumber}`)}>
+    <History className="mr-2 h-4 w-4" />
+    Publication History
+  </Button>
+
+  <Button variant="outline" className="rounded" onClick={() => navigate('/publicationsg')}>
+    ← Back
+  </Button>
+</div>
+
+      {/* </div> */}
+            {/* </Link> */}
           </div>
 
           {/* Publications Table */}
@@ -116,7 +132,10 @@ const StudentPublications = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Journal</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Publisher Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PublicationType</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">indexing</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category Quartile</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">DOI</th>
                 </tr>
@@ -129,10 +148,16 @@ const StudentPublications = () => {
   {new Date(...publication.dateOfSubmission).toLocaleDateString()}
 </td>
                       <td className="px-6 py-4 text-sm text-gray-900">{publication.title}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{publication.journal}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{publication.publishername}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{publication.publicationType}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{publication.indexing}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{publication.quartile}</td>
                       <td className="px-6 py-4">
                         <PublicationStatus status={publication.status} />
                       </td>
+                      {/* <td className="px-6 py-4">
+                        <PublicationStatus status={publication.status} />
+                      </td> */}
                       <td className="px-6 py-4 text-sm">
                         <a 
                           href={`https://doi.org/${publication.doi}`} 

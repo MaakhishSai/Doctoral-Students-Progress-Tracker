@@ -1051,7 +1051,7 @@ const ExamAnnouncement = () => {
                         <p className="font-medium">{c.studentEmail}</p>
                         <p>{c.comment}</p>
                         <p className="text-xs text-muted-foreground">
-                          {formatTimestamp(c.timestamp)}
+                          {(c.timestamp)}
                         </p>
                       </div>
                     ))
@@ -1154,7 +1154,15 @@ const ExamAnnouncement = () => {
                       <p className="font-medium">{c.studentEmail}</p>
                       <p>{c.comment}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(c.timestamp).toLocaleString()}
+                      {new Date(c.timestamp[0], c.timestamp[1] - 1, c.timestamp[2], c.timestamp[3], c.timestamp[4])
+    .toLocaleString("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false, // Ensures 24-hour format
+    })}
                       </p> 
                     </div>
                   ))

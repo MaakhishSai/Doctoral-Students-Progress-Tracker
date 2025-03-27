@@ -61,6 +61,20 @@ function formatTimestamp(timestamp) {
   const date = new Date(year, month, day);
   return date.toLocaleString(); // This will format the date and time according to the user's locale
 }
+const formatDateReq = (timestamp) => {
+  if (!timestamp || timestamp.length < 5) return "Invalid Date";
+
+  return new Date(timestamp[0], timestamp[1] - 1, timestamp[2], timestamp[3], timestamp[4])
+    .toLocaleString("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false, // Ensures 24-hour format
+    });
+};
+
 
 const ExamAnnouncement = () => {
   // Common state
@@ -881,7 +895,7 @@ const ExamAnnouncement = () => {
                           <TableCell>{request.studentRoll}</TableCell>
                           <TableCell>{request.shift}</TableCell>
                           <TableCell>{getStatusBadge(request.status)}</TableCell>
-                          <TableCell>{formatTimestamp(request.dateApplied)}</TableCell>
+                          <TableCell>{formatDateReq(request.dateApplied)}</TableCell>
                         </TableRow>
                       ))
                     ) : (

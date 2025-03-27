@@ -156,7 +156,7 @@ const Compre = () => {
     console.log("Checking Application:", app);
     console.log("Status:", app.status);
     console.log(app.studentEmail);
-    return (app.status || '') === 'REJECTED';
+    return (app.status || '') === 'Rejected';
   });
 
   console.log("Rejected Applications:", rejectedApplications);

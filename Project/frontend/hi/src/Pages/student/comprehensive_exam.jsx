@@ -212,6 +212,7 @@ const Exam = () => {
     setResubmitAppId(application.id)
     setShowApplyDialog(true)
   }
+  // console.log(selectedExam);
 
   const handleConfirmApplication = async () => {
     if (!selectedExam) return
@@ -227,7 +228,7 @@ const Exam = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               examId: selectedExam.id,
-              examName: selectedExam.name,
+              name: selectedExam.examName,
               studentEmail: currentStudent.email,
               specializedSyllabi: formattedSyllabi,
               status: 'Submitted',
@@ -245,6 +246,7 @@ const Exam = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             examId: selectedExam.id,
+            name: selectedExam.examName,
             studentEmail: currentStudent.email,
             specializedSyllabi: formattedSyllabi,
             status: 'Submitted',
@@ -273,6 +275,7 @@ const Exam = () => {
       toast.error(error.message)
     }
   }
+  console.log("h",applications);
 
   // ------------------ "Add Comment" on Announcement ------------------
   const handleAddComment = (announcement) => {
@@ -484,7 +487,7 @@ const Exam = () => {
                       <Card key={app.id} className="card-transition">
                         <CardHeader>
                           <div className="flex justify-between items-start">
-                            <CardTitle>Exam ID: {app.examId}</CardTitle>
+                            <CardTitle>Exam Name: {app.name}</CardTitle>
                             <Badge variant="default">Submitted</Badge>
                           </div>
                           <CardDescription>Roll: {app.studentRoll}</CardDescription>
@@ -513,7 +516,7 @@ const Exam = () => {
                     <Card key={app.id} className="card-transition">
                       <CardHeader>
                         <div className="flex justify-between items-start">
-                          <CardTitle>Exam ID: {app.examId}</CardTitle>
+                          <CardTitle>Exam Name: {app.name}</CardTitle>
                           <Badge variant="default">Approved</Badge>
                         </div>
                         <CardDescription>Roll: {app.studentRoll}</CardDescription>
@@ -543,7 +546,7 @@ const Exam = () => {
                       <Card key={app.id} className="card-transition">
                         <CardHeader>
                           <div className="flex justify-between items-start">
-                            <CardTitle>Exam ID: {app.examId}</CardTitle>
+                            <CardTitle>Exam Name: {app.name}</CardTitle>
                             <Badge variant="destructive">Rejected</Badge>
                           </div>
                           <CardDescription>Roll: {app.studentRoll}</CardDescription>

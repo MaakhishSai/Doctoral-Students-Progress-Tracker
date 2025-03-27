@@ -19,7 +19,7 @@ public class Application {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-//    private String name;
+    private String name;
 
     private Long examId;           // which exam the student is applying for
     private String studentEmail;  // e.g., "P220545CS"

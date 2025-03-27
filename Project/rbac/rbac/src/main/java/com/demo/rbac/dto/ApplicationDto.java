@@ -13,7 +13,7 @@ import java.util.List;
 public class ApplicationDto {
 
     private Long examId;
-//    private String name;
+    private String name;
     private String studentEmail;
     private List<String> specializedSyllabi;
     private String status;

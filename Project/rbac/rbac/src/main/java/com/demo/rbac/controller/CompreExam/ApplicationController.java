@@ -34,7 +34,7 @@ public class ApplicationController {
 
         Application application = new Application();
         application.setExamId(dto.getExamId());
-//        application.setName(dto.getName());
+         application.setName(dto.getName());
         application.setStudentEmail(dto.getStudentEmail());
         application.setStatus(dto.getStatus());
         application.setDateApplied(LocalDateTime.now());
@@ -111,7 +111,7 @@ public class ApplicationController {
                 .map(app -> {
                     ApplicationDto dto = new ApplicationDto();
                     dto.setExamId(app.getExamId());
-//                    dto.setName(app.getName());
+                   dto.setName(app.getName());
                     dto.setStudentEmail(app.getStudentEmail());
                     dto.setSpecializedSyllabi(
                             app.getSpecializedSyllabi().stream()

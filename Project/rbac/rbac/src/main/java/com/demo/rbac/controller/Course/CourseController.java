@@ -21,7 +21,9 @@ public class CourseController {
 
     @Autowired
     private CourseService courseService;  // ✅ Fixed naming convention
-
+    public CourseController(CourseService courseService) {
+        this.courseService = courseService;
+    }
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         try {

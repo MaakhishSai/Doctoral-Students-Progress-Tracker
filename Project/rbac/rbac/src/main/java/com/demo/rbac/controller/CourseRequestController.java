@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import javax.validation.Valid;
 
 import com.demo.rbac.model.CourseRequest;
 import com.demo.rbac.repository.CourseRequestRepository;
@@ -17,14 +18,25 @@ public class CourseRequestController {
 
     @Autowired
     private CourseRequestRepository courseRequestRepository;
+    public CourseRequestController(CourseRequestRepository courseRequestRepository) {
+        this.courseRequestRepository = courseRequestRepository;
+    }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addCourseRequests(@RequestBody List<CourseRequest> requests) {  
+    public ResponseEntity<?> addCourseRequests(@Valid @RequestBody List<CourseRequest> requests) {  
         if (requests == null || requests.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"message\": \"No course requests provided.\" }");
         }
 
         for (CourseRequest request : requests) {
+            if (request.getStudentId() == null || request.getStudentId().isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("{ \"message\": \"Student ID is required for each request.\" }");
+            }
+            if (request.getCourseId() == null || request.getCourseId().isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("{ \"message\": \"Course ID is required for each request.\" }");
+            }
             Optional<CourseRequest> existingRequest = 
                 courseRequestRepository.findByStudentIdAndCourseId(request.getStudentId(), request.getCourseId());
 

@@ -14,11 +14,18 @@ public class CommentController {
 
     @Autowired
     private CommentService commentService;
+    public CommentController(CommentService commentService) {
+        this.commentService = commentService;
+    }
 
     // Endpoint for a student to add a comment to an exam announcement
     @PostMapping("/{examId}/comments")
     public ResponseEntity<?> addComment(@PathVariable Long examId,
                                         @RequestBody CommentRequest commentRequest) {
+    if (commentRequest.getStudentEmail() == null || commentRequest.getStudentEmail().isBlank() ||
+        commentRequest.getComment() == null || commentRequest.getComment().isBlank()) {
+        return ResponseEntity.badRequest().body("Missing student email or comment content");
+    }
         Comment savedComment = commentService.saveComment(
                 examId,
                 commentRequest.getStudentEmail(),

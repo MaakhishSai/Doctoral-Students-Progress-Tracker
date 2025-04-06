@@ -1,9 +1,15 @@
 package com.demo.rbac.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "committee_members")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class CommitteeMember {
 
     @Id  // Corrected import

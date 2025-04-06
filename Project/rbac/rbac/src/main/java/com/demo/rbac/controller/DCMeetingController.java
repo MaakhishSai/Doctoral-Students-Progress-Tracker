@@ -14,6 +14,7 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,27 +58,31 @@ public class DCMeetingController {
     }
 
     @GetMapping("/fetch")
-    public ResponseEntity<List<Map<String, Object>>> fetchMeetings(Principal principal) {
-        String studentEmail = principal.getName();
-        List<DCMeeting> meetings = dcMeetingRepository.findByStudentEmail(studentEmail);
+public ResponseEntity<List<Map<String, Object>>> fetchMeetings(Principal principal) {
+    String studentEmail = principal.getName();
+    List<DCMeeting> meetings = dcMeetingRepository.findByStudentEmail(studentEmail);
 
-        List<Map<String, Object>> response = meetings.stream().map(meeting -> {
-            Map<String, Object> meetingMap = new HashMap<>();
-            meetingMap.put("id", meeting.getId());
-            meetingMap.put("date", meeting.getDate().toString());
-            meetingMap.put("time", meeting.getTime() != null ? meeting.getTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")) : null);
-            meetingMap.put("writeup", meeting.getWriteup());
-            meetingMap.put("status", meeting.getStatus());
-            meetingMap.put("studentEmail", meeting.getStudentEmail());
-            meetingMap.put("fileName", meeting.getFileName());
-            meetingMap.put("comments", meeting.getComments());
-            return meetingMap;
-        }).collect(Collectors.toList());
-
-        System.out.println("Meeting Map: " + response);
-
-        return ResponseEntity.ok(response);
+    if (meetings == null || meetings.isEmpty()) {
+        return ResponseEntity.ok(Collections.emptyList());
     }
+
+    List<Map<String, Object>> response = meetings.stream().map(meeting -> {
+        Map<String, Object> meetingMap = new HashMap<>();
+        meetingMap.put("id", meeting.getId() != null ? meeting.getId() : 0L); // Ensure id is not null
+        meetingMap.put("date", meeting.getDate() != null ? meeting.getDate().toString() : null);
+        meetingMap.put("time", meeting.getTime() != null ? meeting.getTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")) : null);
+        meetingMap.put("writeup", meeting.getWriteup());
+        meetingMap.put("status", meeting.getStatus());
+        meetingMap.put("studentEmail", meeting.getStudentEmail());
+        meetingMap.put("fileName", meeting.getFileName());
+        meetingMap.put("comments", meeting.getComments());
+        return meetingMap;
+    }).collect(Collectors.toList());
+
+    System.out.println("Meeting Map: " + response);
+
+    return ResponseEntity.ok(response);
+}
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateMeeting(
@@ -201,13 +206,20 @@ public class DCMeetingController {
             @RequestBody Map<String, String> request,
             Principal principal) {
 
-        DCMeeting meeting = dcMeetingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Meeting not found"));
+        DCMeeting meeting = dcMeetingRepository.findById(id).orElse(null);
+
+                // Check if the meeting is found
+        if (meeting == null) {
+                    // Return a 404 Not Found response with a custom message
+        return new ResponseEntity<>("Meeting not found", HttpStatus.NOT_FOUND);
+        }
 
         // Check if the logged-in supervisor is actually the guide of the student
         String supervisorEmail = principal.getName();
-        Student student = studentRepository.findByEmail(meeting.getStudentEmail())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        Student student = studentRepository.findByEmail(meeting.getStudentEmail()).orElse(null);
+        if (student == null) {
+            return new ResponseEntity<>("Student not found", HttpStatus.NOT_FOUND);
+        }
         if (!student.getGuide().getEmail().equals(supervisorEmail)) {
             return new ResponseEntity<>("Unauthorized", HttpStatus.FORBIDDEN);
         }

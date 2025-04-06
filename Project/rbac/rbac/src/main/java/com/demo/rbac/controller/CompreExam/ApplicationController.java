@@ -7,7 +7,9 @@ import com.demo.rbac.model.Student;
 import com.demo.rbac.repository.CompreExam.ApplicationRepository;
 import com.demo.rbac.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,13 +27,20 @@ public class ApplicationController {
 
     @Autowired
     private StudentRepository studentRepo;
-
+    public ApplicationController(ApplicationRepository applicationRepository,
+                                 StudentRepository studentRepository) {
+        this.appRepo = applicationRepository;
+        this.studentRepo = studentRepository;
+    }
     @PostMapping("/applications")
     public Application createApplication(@RequestBody ApplicationDto dto) {
         if (dto.getExamId() == null || dto.getStudentEmail() == null) {
-            throw new RuntimeException("Missing examId or studentEmail");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Missing examId or studentEmail");
         }
-
+        Optional<Student> st = studentRepo.findByEmail(dto.getStudentEmail());
+         if (st.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Student not found");
+    }
         Application application = new Application();
         application.setExamId(dto.getExamId());
          application.setName(dto.getName());
@@ -40,7 +49,7 @@ public class ApplicationController {
         application.setDateApplied(LocalDateTime.now());
         application.setGuideComment(dto.getGuideComment());
         application.setShift(dto.getShift());
-        Optional<Student> st = studentRepo.findByEmail(dto.getStudentEmail());
+        // Optional<Student> st = studentRepo.findByEmail(dto.getStudentEmail());
         Long guideId = st.get().getGuide().getId();
         application.setGuideId(guideId);
         String studentRollNo = st.get().getRoll();
@@ -76,7 +85,7 @@ public class ApplicationController {
     @PutMapping("/applications/{id}")
     public Application updateApplication(@PathVariable Long id, @RequestBody ApplicationDto dto) {
         Application application = appRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,"Application not found"));
 
         // Update the status if provided (this can include approval, rejection, or resubmission)
         if(dto.getStatus() != null) {

@@ -26,7 +26,7 @@ public class ResultsService {
                 throw new RuntimeException("No valid Resultss found in the uploaded file.");
             }
 
-            return ResultsRepository.saveAll(Resultss);  // ✅ Save and return the list
+            return ResultsRepository.saveAll(Resultss);  // Save and return the list
         } catch (Exception e) {
             throw new RuntimeException("Error processing Excel file: " + e.getMessage(), e);
         }

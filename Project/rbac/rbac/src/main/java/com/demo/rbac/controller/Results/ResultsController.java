@@ -28,7 +28,7 @@ public class ResultsController {
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            if (file.isEmpty()) {
+            if (file == null || file.isEmpty()) {
                 return ResponseEntity.badRequest().body("File is empty. Please upload a valid Excel file.");
             }
 

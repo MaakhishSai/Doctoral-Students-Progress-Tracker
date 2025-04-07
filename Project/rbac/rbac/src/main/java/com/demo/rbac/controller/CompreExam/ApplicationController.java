@@ -43,7 +43,7 @@ public class ApplicationController {
     }
         Application application = new Application();
         application.setExamId(dto.getExamId());
-         application.setName(dto.getName());
+        application.setName(dto.getName());
         application.setStudentEmail(dto.getStudentEmail());
         application.setStatus(dto.getStatus());
         application.setDateApplied(LocalDateTime.now());

@@ -32,15 +32,16 @@ public class StudentController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
     @GetMapping("/{rollNumber}/publications")
     public ResponseEntity<Integer> getPublicationCount(@PathVariable String rollNumber) {
         try {
-        int count = studentService.getPublicationCountForStudent(rollNumber);
-        return ResponseEntity.ok(count);
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            int count = studentService.getPublicationCountForStudent(rollNumber);
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-}
 
     @GetMapping("/all")
     public ResponseEntity<List<StudentGuideDTO>> getAllStudents() {

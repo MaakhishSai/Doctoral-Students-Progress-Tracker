@@ -65,8 +65,8 @@ public class ExcelHelper {
 
                 students.add(student);
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Error processing Excel file: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Error processing Excel file: " + e.getMessage(), e);
         }
 
         return students; // Return students, do NOT save here

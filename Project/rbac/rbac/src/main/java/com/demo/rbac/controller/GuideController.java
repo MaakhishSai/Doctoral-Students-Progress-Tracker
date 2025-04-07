@@ -52,6 +52,9 @@ public ResponseEntity<GuideDTO> getGuideById(@PathVariable Long guideId) {
 
     @GetMapping("/me")
     public ResponseEntity<Long> getMyId(@AuthenticationPrincipal OAuth2User principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // or isForbidden() depending on your config
+        }
         String email = principal.getAttribute("email");
         System.out.println("entering guide me" + email);
         Long guideId = guideService.getGuideIdByEmail(email);

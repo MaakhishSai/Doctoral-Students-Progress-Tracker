@@ -1,5 +1,6 @@
 package com.demo.rbac.model.CompreExam;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,9 +25,7 @@ public class Application {
     private Long examId;           // which exam the student is applying for
     private String studentEmail;  // e.g., "P220545CS"
     private LocalDateTime dateApplied;
-
     private String status;
-
     private String shift;
 
     // ONE Application -> MANY Syllabi

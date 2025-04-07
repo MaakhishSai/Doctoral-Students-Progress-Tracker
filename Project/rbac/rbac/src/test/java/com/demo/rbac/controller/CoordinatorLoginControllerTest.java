@@ -3,18 +3,18 @@ package com.demo.rbac.controller;
 import com.demo.rbac.model.Coordinator;
 import com.demo.rbac.model.UserRole;
 import com.demo.rbac.repository.CoordinatorRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Optional;
 
@@ -22,42 +22,39 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-@WebMvcTest(CoordinatorLoginController.class)
+
 class CoordinatorLoginControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
-
+    private AuthenticationManager authenticationManager;
+    private CoordinatorRepository coordinatorRepository;
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-    @Mock
-    private AuthenticationManager authenticationManager;
+        authenticationManager = Mockito.mock(AuthenticationManager.class);
+        coordinatorRepository = Mockito.mock(CoordinatorRepository.class);
 
-    @Mock
-    private CoordinatorRepository coordinatorRepository;
+        CoordinatorLoginController controller = new CoordinatorLoginController(authenticationManager, coordinatorRepository);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        new ObjectMapper();
+    }
 
     @Test
     void testLogin_Success() throws Exception {
-        // Mock authentication
         Authentication authentication = new UsernamePasswordAuthenticationToken("coordinator", "password");
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
 
-        // Mock coordinator lookup
         Coordinator coordinator = new Coordinator();
         coordinator.setUsername("coordinator");
-        coordinator.setUserRole(UserRole.COORDINATOR); // Make sure this enum exists
+        coordinator.setUserRole(UserRole.COORDINATOR);
 
         when(coordinatorRepository.findByUsername("coordinator")).thenReturn(Optional.of(coordinator));
 
-        // Perform POST request
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {
                                 "username": "coordinator",
-                                "password": "password"
+                                "password": "securepassword"
                             }
                         """))
                 .andExpect(status().isOk())
@@ -67,12 +64,10 @@ class CoordinatorLoginControllerTest {
 
     @Test
     void testLogin_InvalidCredentials() throws Exception {
-        // Mock successful authentication but no coordinator found in DB
         Authentication authentication = new UsernamePasswordAuthenticationToken("invalid", "password");
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
         when(coordinatorRepository.findByUsername("invalid")).thenReturn(Optional.empty());
 
-        // Perform POST request
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

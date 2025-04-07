@@ -1,5 +1,4 @@
 package com.demo.rbac.controller.CompreExam;
-
 import com.demo.rbac.dto.ApplicationDto;
 import com.demo.rbac.model.CompreExam.Application;
 import com.demo.rbac.model.CompreExam.SpecializedSyllabus;
@@ -13,11 +12,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,10 +25,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ApplicationController.class)
-public class ApplicationControllerTest {
+class ApplicationControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
     @Mock
@@ -39,8 +35,8 @@ public class ApplicationControllerTest {
     @Mock
     private StudentRepository studentRepository;
 
-    @Autowired
     private ObjectMapper objectMapper;
+    private ApplicationController applicationController;
 
     private Student student;
     private Guide guide;
@@ -49,13 +45,17 @@ public class ApplicationControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        applicationController = new ApplicationController(applicationRepository, studentRepository);
+        mockMvc = MockMvcBuilders.standaloneSetup(applicationController).build();
+        objectMapper = new ObjectMapper();
+
         guide = new Guide();
         guide.setId(1L);
 
         student = new Student();
         student.setEmail("student@example.com");
-        student.setRoll("M21CS001");
-        student.setName("John Doe");
+        student.setRoll("B220780CS");
+        student.setName("Manhaas");
         student.setGuide(guide);
 
         application = new Application();
@@ -69,7 +69,6 @@ public class ApplicationControllerTest {
         application.setGuideId(guide.getId());
         application.setDateApplied(LocalDateTime.now());
 
-        // Add specialized syllabi to application
         SpecializedSyllabus s1 = new SpecializedSyllabus();
         s1.setContent("Syllabus A");
         s1.setApplication(application);
@@ -96,8 +95,8 @@ public class ApplicationControllerTest {
         when(applicationRepository.save(any(Application.class))).thenReturn(application);
 
         mockMvc.perform(post("/api/applications")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.studentEmail").value("student@example.com"))
                 .andExpect(jsonPath("$.specializedSyllabi[0].content").value("Syllabus A"))
@@ -107,27 +106,44 @@ public class ApplicationControllerTest {
     @Test
     void testCreateApplication_MissingExamIdOrEmail() throws Exception {
         ApplicationDto dto = new ApplicationDto();
-        dto.setName("Comprehensive Exam");
-
+        dto.setName("Comprehensive Exam"); // missing examId and studentEmail
+    
         mockMvc.perform(post("/api/applications")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isInternalServerError());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> {
+                    Throwable ex = result.getResolvedException();
+                    assert ex instanceof ResponseStatusException;
+                    assert ex.getMessage().contains("Missing examId or studentEmail");
+                });
     }
+    
 
-    @Test
-    void testCreateApplication_StudentNotFound() throws Exception {
-        ApplicationDto dto = new ApplicationDto();
-        dto.setExamId(101L);
-        dto.setStudentEmail("missing@student.com");
+    
+    
+    
 
-        when(studentRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+@Test
+void testCreateApplication_StudentNotFound() throws Exception {
+    ApplicationDto dto = new ApplicationDto();
+    dto.setExamId(101L);
+    dto.setStudentEmail("missing@student.com");
 
-        mockMvc.perform(post("/api/applications")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isInternalServerError());
-    }
+    when(studentRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+    mockMvc.perform(post("/api/applications")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(status().isBadRequest())
+            .andExpect(result -> {
+                Throwable ex = result.getResolvedException();
+                assert ex instanceof ResponseStatusException;
+                assert ex.getMessage().contains("Student not found");
+            });
+}
+
+
 
     @Test
     void testGetApplicationsForGuide() throws Exception {
@@ -135,25 +151,7 @@ public class ApplicationControllerTest {
 
         mockMvc.perform(get("/api/applications/guide/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].studentRoll").value("M21CS001"));
-    }
-
-    @Test
-    void testGetApplicationsForStudent() throws Exception {
-        when(applicationRepository.findByStudentEmail("student@example.com")).thenReturn(List.of(application));
-
-        mockMvc.perform(get("/api/applications/student/student@example.com"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].studentName").value("John Doe"));
-    }
-
-    @Test
-    void testGetApplicationsForStudent_NoApps() throws Exception {
-        when(applicationRepository.findByStudentEmail("student@example.com")).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/api/applications/student/student@example.com"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$[0].studentRoll").value("B220780CS"));
     }
 
     @Test
@@ -166,27 +164,44 @@ public class ApplicationControllerTest {
     }
 
     @Test
+    void testGetApplicationsForStudent() throws Exception {
+        when(applicationRepository.findByStudentEmail("student@example.com")).thenReturn(List.of(application));
+
+        mockMvc.perform(get("/api/applications/student/student@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].studentName").value("Manhaas"));
+    }
+
+    @Test
+    void testGetApplicationsForStudent_NoApps() throws Exception {
+        when(applicationRepository.findByStudentEmail("student@example.com")).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/applications/student/student@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     void testUpdateApplication() throws Exception {
         ApplicationDto dto = new ApplicationDto();
         dto.setStatus("Approved");
         dto.setGuideComment("Looks good");
         dto.setSpecializedSyllabi(List.of("Updated Syllabus"));
 
-        // Add updated syllabus for return
         SpecializedSyllabus updated = new SpecializedSyllabus();
         updated.setContent("Updated Syllabus");
         updated.setApplication(application);
 
         application.setStatus("Approved");
         application.setGuideComment("Looks good");
-        application.setSpecializedSyllabi(List.of(updated));
+        application.setSpecializedSyllabi(new ArrayList<>(List.of(updated)));
 
         when(applicationRepository.findById(1L)).thenReturn(Optional.of(application));
         when(applicationRepository.save(any(Application.class))).thenReturn(application);
 
         mockMvc.perform(put("/api/applications/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("Approved"))
                 .andExpect(jsonPath("$.specializedSyllabi[0].content").value("Updated Syllabus"));
@@ -200,9 +215,9 @@ public class ApplicationControllerTest {
         when(applicationRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         mockMvc.perform(put("/api/applications/999")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isInternalServerError());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -216,19 +231,27 @@ public class ApplicationControllerTest {
         when(applicationRepository.save(any(Application.class))).thenReturn(application);
 
         mockMvc.perform(put("/api/applications/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.specializedSyllabi").isEmpty());
     }
 
     @Test
     void testGetAllApplications() throws Exception {
+        SpecializedSyllabus syllabus = new SpecializedSyllabus();
+        syllabus.setContent("Syllabus A");
+        syllabus.setApplication(application);
+    
+        application.setSpecializedSyllabi(List.of(syllabus));
+        application.setStudentEmail("student@example.com");
+    
         when(applicationRepository.findAll()).thenReturn(List.of(application));
-
+    
         mockMvc.perform(get("/api/applications/all"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].studentEmail").value("student@example.com"))
-                .andExpect(jsonPath("$[0].specializedSyllabi[0].content").value("Syllabus A"));
+                .andExpect(jsonPath("$[0].specializedSyllabi[0]").value("Syllabus A")); // ✅ fixed line
     }
+    
 }

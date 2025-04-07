@@ -1,4 +1,4 @@
-package com.demo.rbac.controller.controller;
+package com.demo.rbac.controller;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;

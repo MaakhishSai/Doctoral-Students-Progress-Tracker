@@ -2,15 +2,13 @@ package com.demo.rbac.controller.publications;
 
 import com.demo.rbac.model.Publicationhistory;
 import com.demo.rbac.service.publications.PublicationhistoryService;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -20,19 +18,19 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PublicationhistoryController.class)
 class PublicationhistoryControllerTest {
+
+    private MockMvc mockMvc;
+    private PublicationhistoryService publicationhistoryService;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        publicationhistoryService = Mockito.mock(PublicationhistoryService.class);
+        PublicationhistoryController controller = new PublicationhistoryController(publicationhistoryService);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        objectMapper = new ObjectMapper();
     }
-    @Mock
-    private PublicationhistoryService publicationhistoryService;
-    @Autowired
-    private MockMvc mockMvc;
-
-  
 
     @Test
     void shouldCreateNewPublicationHistoryEntry_WhenNoPreviousExists() throws Exception {

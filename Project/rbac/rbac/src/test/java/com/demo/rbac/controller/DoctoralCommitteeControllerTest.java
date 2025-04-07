@@ -1,8 +1,7 @@
-package com.demo.rbac.controller.controller;
+package com.demo.rbac.controller;
 
 import static org.mockito.Mockito.when;
 
-import com.demo.rbac.controller.DoctoralCommitteeController;
 import com.demo.rbac.model.CommitteeMember;
 import com.demo.rbac.model.DoctoralCommittee;
 import com.demo.rbac.repository.DoctoralCommitteeRepository;

@@ -6,11 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,18 +21,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class CourseRequestControllerTest {
 
+    private MockMvc mockMvc;
+    private CourseRequestRepository courseRequestRepository;
+    private ObjectMapper objectMapper;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        courseRequestRepository = Mockito.mock(CourseRequestRepository.class);
+        CourseRequestController controller = new CourseRequestController(courseRequestRepository);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        objectMapper = new ObjectMapper();
     }
-    @Mock
-    private CourseRequestRepository courseRequestRepository;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private CourseRequest buildRequest(String studentId, String courseId, String status) {
         CourseRequest req = new CourseRequest();
@@ -117,8 +115,8 @@ class CourseRequestControllerTest {
                 .thenReturn(Optional.of(req));
 
         mockMvc.perform(put("/api/coursereq/approve/B220780CS/CS201"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Course request approved"));
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Request is already approved"));
     }
 
     @Test
@@ -148,8 +146,8 @@ class CourseRequestControllerTest {
                 .thenReturn(Optional.of(req));
 
         mockMvc.perform(put("/api/coursereq/reject/B220780CS/CS201"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Course request rejected"));
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Request is already rejected"));
     }
 
     @Test

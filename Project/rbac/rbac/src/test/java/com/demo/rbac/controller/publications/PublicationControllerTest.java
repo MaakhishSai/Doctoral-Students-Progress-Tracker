@@ -4,15 +4,12 @@ import com.demo.rbac.dto.PublicationRequest;
 import com.demo.rbac.model.Publication;
 import com.demo.rbac.service.publications.PublicationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.*;
 
@@ -20,22 +17,19 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PublicationController.class)
 class PublicationControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
+    private PublicationService publicationService;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        publicationService = Mockito.mock(PublicationService.class);
+        PublicationController controller = new PublicationController(publicationService);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        objectMapper = new ObjectMapper();
     }
-
-    @Autowired
-    @Mock
-    private PublicationService publicationService;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     void testAddPublication_Success() throws Exception {

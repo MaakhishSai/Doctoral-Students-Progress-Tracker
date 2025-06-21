@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Download, Check, X } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-hot-toast';
 import axios from "axios";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,6 @@ const Actions = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [actionType, setActionType] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { toast } = useToast();
   const [guideEmail, setGuideEmail] = useState("");
   
   const [guideId, setGuideId] = useState(null);
@@ -48,7 +47,7 @@ const Actions = () => {
       
       // Call the backend API to update the status
       await axios.put(
-        `http://localhost:8080/api/coursereq/${action}/${request.studentId}/${request.courseId}`, 
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/coursereq/${action}/${request.studentId}/${request.courseId}`, 
         { withCredentials: true }
       );
 
@@ -79,7 +78,7 @@ const Actions = () => {
     useEffect(() => {
       const fetchGuideEmail = async () => {
         try {
-          const response = await axios.get("http://localhost:8080/api/user/super", { withCredentials: true });
+          const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/super`, { withCredentials: true });
           console.log(response.data);
           if (response.data.email) {
             setGuideEmail(response.data.email);
@@ -99,7 +98,7 @@ const Actions = () => {
   
       const fetchGuideId = async () => {
         try {
-          const response = await axios.get(`http://localhost:8080/api/guides/email/${guideEmail}`, { withCredentials: true });
+          const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/email/${guideEmail}`, { withCredentials: true });
           console.log(response.data);
           if (response.data) {
             setGuideId(response.data);
@@ -120,7 +119,7 @@ const Actions = () => {
   
       const fetchStudents = async () => {
         try {
-          const response = await axios.get(`http://localhost:8080/api/guides/${guideId}/students`, { withCredentials: true });
+          const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/${guideId}/students`, { withCredentials: true });
           console.log("j",response.data);
           if (response.data) {
             setStudents(response.data);
@@ -142,7 +141,7 @@ const Actions = () => {
       try {
         const requests = await Promise.all(
           students.map(async (student) => {
-            const response = await axios.get(`http://localhost:8080/api/coursereq/status/${student.rollNo}`, {
+            const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/coursereq/status/${student.rollNo}`, {
               withCredentials: true,
             });
             console.log(response.data);
@@ -200,7 +199,7 @@ const Actions = () => {
     const handleConfirmAction = async () => {
       try {
         const action = actionType === "approve" ? "approve" : "reject";
-        await axios.put(`http://localhost:8080/api/coursereq/${action}/${selectedRequest.id}`, {}, { withCredentials: true });
+        await axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/coursereq/${action}/${selectedRequest.id}`, {}, { withCredentials: true });
   
         toast({
           title: `Request ${action}d`,

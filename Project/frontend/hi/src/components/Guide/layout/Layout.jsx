@@ -12,7 +12,7 @@ const PageLayout = ({ children }) => {
     const fetchGuideData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/api/user/super', {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/super`, {
           withCredentials: true
         });
 

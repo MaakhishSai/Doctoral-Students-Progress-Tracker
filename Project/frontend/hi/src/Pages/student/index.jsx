@@ -23,36 +23,7 @@ import {
   Clock 
 } from 'lucide-react';
 import axios from 'axios';
-const upcomingMeetings = [
-  {
-    id: 1,
-    title: "DC Committee Meeting",
-    date: "March 15, 2025",
-    status: "scheduled",
-  },
-  {
-    id: 2,
-    title: "Progress Review",
-    date: "March 05, 2025",
-    status: "pending",
-  }
-];
-const recentPublications = [
-  {
-    id: 1,
-    title: "Deep Learning Approaches for Natural Language Processing in Healthcare",
-    journal: "IEEE Transactions on Medical Imaging",
-    status: "published",
-    date: "jan 1, 2024",
-  },
-  {
-    id: 2,
-    title: "Novel Approaches to Quantum Computing Algorithms",
-    journal: "Physical Review Letters",
-    status: "Editorial Revision",
-    date: "june 15, 2024",
-  }
-];
+import { toast } from 'react-hot-toast';
 const getPublicationStats = (publications) => {
   let stats = {
     total: publications.length,
@@ -107,7 +78,7 @@ const Index = () => {
     const fetchProfileData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/api/user/profile', {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/profile`, {
           withCredentials: true
         });
 
@@ -125,13 +96,14 @@ const Index = () => {
           setOrcidInput(response.data.orcid || "");
           setResearchInput(response.data.areaofresearch || "");
           fetchPublications(response.data.rollNumber); 
-        
+          // toast.success("Profile loaded successfully!");
         } else {
           throw new Error('Invalid response format');
         }
       } catch (err) {
         console.error('Error fetching profile data:', err);
         setError('Failed to load profile data. Please try again later.');
+        toast.error('Failed to load profile data. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -141,13 +113,14 @@ const Index = () => {
   }, []);
   const fetchPublications = async (rollNumber) => {
     try {
-      const publicationsResponse = await axios.get(`http://localhost:8080/api/publications/get/${rollNumber}`);
+      const publicationsResponse = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/get/${rollNumber}`);
       setPublications(publicationsResponse.data);
       console.log("Publications Data:", publicationsResponse.data);
       setPublicationStats(getPublicationStats(publicationsResponse.data));
-      
+      // toast.success("Publications loaded successfully!");
     } catch (err) {
       console.error("Error fetching publications:", err);
+      // toast.error("Failed to load publications.");
     } finally {
       setLoading(false);
     }
@@ -163,7 +136,7 @@ const Index = () => {
         areaofresearch: researchInput
       };
 
-      await axios.put('http://localhost:8080/api/user/update-profile', payload, { withCredentials: true });
+      await axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/update-profile`, payload, { withCredentials: true });
       
       // Update local state once backend update is successful.
       setProfileData(prev => ({
@@ -172,11 +145,10 @@ const Index = () => {
         areaofresearch: researchInput
       }));
 
-      // Optionally, show a success notification here.
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile. Please try again.");
+      toast.error("Failed to update profile. Please try again.");
     }
   };
 

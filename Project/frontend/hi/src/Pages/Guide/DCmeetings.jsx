@@ -22,6 +22,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
+import { toast } from 'react-hot-toast';
+
 const DCMeetingsg = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,7 +33,7 @@ const DCMeetingsg = () => {
   // Fetch meetings for supervisor from backend
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/dc-meetings/fetch-for-supervisor", {
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/fetch-for-supervisor`, {
         withCredentials: true,
       })
       .then((res) => setMeetings(res.data))
@@ -63,7 +65,7 @@ const DCMeetingsg = () => {
   const handleDownload = async (id, fileName) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/dc-meetings/download/${id}`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/download/${id}`,
         {
           withCredentials: true,
           responseType: "blob",

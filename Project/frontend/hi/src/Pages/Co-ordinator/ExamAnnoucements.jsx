@@ -52,7 +52,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { toast } from 'react-hot-toast';
 import { cn } from "@/lib/utils";
 
 
@@ -137,7 +137,7 @@ const ExamAnnouncement = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8080/api/results/upload", {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/results/upload`, {
         method: "POST",
         body: formData,
         mode: "cors",
@@ -162,7 +162,7 @@ const ExamAnnouncement = () => {
 
   const fetchStudents = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/results/all");
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/results/all`);
       if (!response.ok) {
         throw new Error(`Server error: ${response.status} ${response.statusText}`);
       }
@@ -206,7 +206,7 @@ const ExamAnnouncement = () => {
     const loadAllData = async () => {
       try {
         // 1) Fetch exams from server
-        const examRes = await fetch("http://localhost:8080/api/exams", {
+        const examRes = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/exams`, {
           method: "GET",
         });
         if (!examRes.ok) {
@@ -216,7 +216,7 @@ const ExamAnnouncement = () => {
         setExams(examData);
 
         // 2) Fetch student applications from backend
-        const appRes = await fetch("http://localhost:8080/api/applications/all", {
+        const appRes = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications/all`, {
           method: "GET",
         });
         if (!appRes.ok) {
@@ -270,7 +270,7 @@ const ExamAnnouncement = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/exams/announce", {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/exams/announce`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -320,7 +320,7 @@ const ExamAnnouncement = () => {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:8080/api/exams/${selectedExam.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/exams/${selectedExam.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -421,7 +421,7 @@ const ExamAnnouncement = () => {
     setShowCommentsDialog(true);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/exams/${exam.id}/comments`, {
+      const res = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/exams/${exam.id}/comments`, {
         method: "GET",
       });
       if (!res.ok) {

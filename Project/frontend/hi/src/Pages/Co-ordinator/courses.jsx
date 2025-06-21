@@ -39,7 +39,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import FileUpload from "@/components/Co-ordinator/FileUpload";
-import { toast } from "sonner";
+import { toast } from 'react-hot-toast';
 
 const SwayamCourseApprovals = () => {
   // Upload related states
@@ -66,7 +66,7 @@ const SwayamCourseApprovals = () => {
   // Fetch course requirements
   const fetchCourseReqs = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/coursereq/all");
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/coursereq/all`);
       if (!response.ok) throw new Error("Failed to fetch course requirements");
       const data = await response.json();
       console.log(data);
@@ -81,7 +81,7 @@ const SwayamCourseApprovals = () => {
   // Fetch students
   const fetchStudents = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/students/all");
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/all`);
       if (!response.ok) throw new Error("Failed to fetch students");
       const data = await response.json();
       console.log(data);
@@ -94,7 +94,7 @@ const SwayamCourseApprovals = () => {
   // Fetch courses
   const fetchCourses = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/courses/all");
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/courses/all`);
       if (!response.ok) throw new Error("Failed to fetch courses");
       const data = await response.json();
       setCourses(data);
@@ -170,7 +170,7 @@ const SwayamCourseApprovals = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8080/api/courses/upload", {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/courses/upload`, {
         method: "POST",
         body: formData,
         mode: 'cors'

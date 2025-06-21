@@ -29,7 +29,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast';
 import {
   Select,
   SelectContent,
@@ -114,7 +114,7 @@ const Exam = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/user/profile', {
+        const res = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/profile`, {
           credentials: 'include'
         })
         if (!res.ok) throw new Error('Failed to fetch user profile')
@@ -137,14 +137,14 @@ const Exam = () => {
       setLoading(true);
       try {
         console.log(currentStudent.rollNo);
-        const res = await axios.get(`http://localhost:8080/api/results/${currentStudent.rollNo}`);
+        const res = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/results/${currentStudent.rollNo}`);
         
         // setResults(res.data); 
         setResults(Array.isArray(res.data) ? res.data : [res.data]);
         console.log("Updated results:", res.data); // ✅ Logs correct API response
       } catch (error) {
         console.error("Failed to fetch results:", error);
-        toast.error("Failed to fetch results.");
+        // toast.error("Failed to fetch results.");
       } finally {
         setLoading(false);
       }
@@ -163,7 +163,7 @@ const Exam = () => {
     const fetchData = async () => {
       try {
         // 1) Get all exam announcements
-        const examRes = await fetch('http://localhost:8080/api/exams')
+        const examRes = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/exams`)
         if (!examRes.ok) throw new Error('Failed to fetch exams')
         const examData = await examRes.json()
 
@@ -181,7 +181,7 @@ const Exam = () => {
 
         // 2) Get this student's existing applications
         const appsRes = await fetch(
-          `http://localhost:8080/api/applications/student/${currentStudent.email}`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications/student/${currentStudent.email}`
         )
         if (!appsRes.ok) throw new Error('Failed to fetch applications')
         const appsData = await appsRes.json()
@@ -222,7 +222,7 @@ const Exam = () => {
       if (isResubmitting && resubmitAppId) {
         // Updating existing (rejected) application
         const response = await fetch(
-          `http://localhost:8080/api/applications/${resubmitAppId}`,
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications/${resubmitAppId}`,
           {
             method: 'PUT', // or PATCH
             headers: { 'Content-Type': 'application/json' },
@@ -241,7 +241,7 @@ const Exam = () => {
         toast.success(`Successfully resubmitted for ${selectedExam.examName}`)
       } else {
         // New application
-        const response = await fetch('http://localhost:8080/api/applications', {
+        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -265,7 +265,7 @@ const Exam = () => {
       setResubmitAppId(null)
 
       const updatedApps = await fetch(
-        `http://localhost:8080/api/applications/student/${currentStudent.email}`
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications/student/${currentStudent.email}`
       )
       if (updatedApps.ok) {
         setApplications(await updatedApps.json())
@@ -288,7 +288,7 @@ const Exam = () => {
     if (!selectedAnnouncement) return
     try {
       const response = await fetch(
-        `http://localhost:8080/api/exams/${selectedAnnouncement.id}/comments`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/exams/${selectedAnnouncement.id}/comments`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

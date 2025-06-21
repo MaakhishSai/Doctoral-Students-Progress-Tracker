@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { UploadCloud, BookOpen, ClipboardCheck,ChevronRight} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 const Dashboardc= () => {
   // Sample data for DC meetings only
   const navigate= useNavigate();

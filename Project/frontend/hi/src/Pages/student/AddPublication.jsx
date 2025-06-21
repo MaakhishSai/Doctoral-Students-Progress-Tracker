@@ -8,12 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, Check, RotateCcw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'react-hot-toast';
 import axios from 'axios'; // Make sure axios is imported
 
 const AddPublication = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const [student, setStudent] = useState(null); // Initialize student state
@@ -21,7 +20,7 @@ const AddPublication = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/user/profile', {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/profile`, {
           withCredentials: true
         });
 
@@ -109,7 +108,7 @@ console.log(formData);
       const payload = { ...formData, rollNo };
   
       // ✅ First API call - Add publication
-      const response = await axios.post('http://localhost:8080/api/publications/add', payload, {
+      const response = await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/add`, payload, {
         headers: { 'Content-Type': 'application/json' },
       });
   
@@ -117,7 +116,7 @@ console.log(formData);
         toast({ title: "Success", description: "Publication added successfully!", variant: "default" });
   
         // ✅ Second API call - Store in history table
-        await axios.post('http://localhost:8080/api/publications/history/add', payload, {
+        await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/history/add`, payload, {
           headers: { 'Content-Type': 'application/json' },
         });
   

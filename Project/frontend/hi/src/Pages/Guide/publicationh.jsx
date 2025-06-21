@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom"; // ✅ Single import stateme
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-
+import { toast } from 'react-hot-toast';
 const PublicationHistory = () => {
   const { rollNumber } = useParams(); // ✅ Get roll number from URL
   const [historyData, setHistoryData] = useState([]);
@@ -13,14 +13,15 @@ const PublicationHistory = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/publications/history/student/${rollNumber}`);
+        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/history/student/${rollNumber}`);
         if (!response.ok) throw new Error("Failed to fetch publication history");
 
         const data = await response.json();
-        console.log(data);
         setHistoryData(data);
+        // toast.success("Publication history loaded successfully!");
       } catch (err) {
         setError(err.message);
+        toast.error(`Error: ${err.message}`);
       } finally {
         setLoading(false);
       }

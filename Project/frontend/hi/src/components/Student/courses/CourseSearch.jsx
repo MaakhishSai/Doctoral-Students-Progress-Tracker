@@ -16,7 +16,7 @@ const CourseSearch = ({ onAddCourse }) => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get("/api/courses/all"); // Update API endpoint if needed
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/courses/all`); // Update API endpoint if needed
         console.log("Fetched Courses:", response.data);
         setAllCourses(response.data);
         setFilteredCourses(response.data);

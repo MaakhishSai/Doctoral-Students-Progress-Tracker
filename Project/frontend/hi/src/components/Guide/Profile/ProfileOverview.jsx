@@ -18,7 +18,7 @@ const ProfileOverview = ({ guide }) => {
     const fetchGuideData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:8080/api/user/super", {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/super`, {
           withCredentials: true,
         });
 
@@ -45,7 +45,7 @@ const ProfileOverview = ({ guide }) => {
     const fetchGuideId = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/api/guides/email/${guideEmail}`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/email/${guideEmail}`, {
           withCredentials: true,
         });
 
@@ -72,7 +72,7 @@ const ProfileOverview = ({ guide }) => {
     const fetchScholars = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/api/guides/${guideId}/students`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/${guideId}/students`, {
           withCredentials: true,
         });
 

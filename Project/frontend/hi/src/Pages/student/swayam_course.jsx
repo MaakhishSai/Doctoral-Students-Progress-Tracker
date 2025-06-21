@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+
+import { toast } from 'react-hot-toast';
 import Layout from "@/components/Student/layout/Layout";
 import CourseSearch from "@/components/Student/courses/CourseSearch";
 import CourseCard from "@/components/Student/courses/CourseCard";
@@ -14,7 +15,6 @@ import CourseDetailsDialog from "@/components/Student/courses/CourseDetailsDialo
 import RequestStatus from '@/components/Guide/courses/RequestStatus';
 import { Snackbar, Alert } from "@mui/material";
 const Courses = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("add");
   const [activeStatusTab, setActiveStatusTab] = useState("all");
@@ -35,7 +35,7 @@ const Courses = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/user/profile", { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/profile`, { withCredentials: true });
         if (response.data?.rollNumber) {
           setStudent(response.data);
         } else {
@@ -43,6 +43,7 @@ const Courses = () => {
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
+        toast.error("Failed to fetch profile data.");
       }
     };
     fetchProfileData();
@@ -52,10 +53,12 @@ const Courses = () => {
   const fetchCourseRequests = async () => {
     if (!student?.rollNumber) return;
     try {
-      const response = await axios.get(`/api/coursereq/status/${student.rollNumber}`);
+      const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/coursereq/status/${student.rollNumber}`);
       setCourseRequests(response.data);
+      // toast.success("Course requests loaded.");
     } catch (error) {
       console.error("Error fetching course requests:", error);
+      toast.error("Failed to fetch course requests.");
     }
   };
 
@@ -104,7 +107,7 @@ const Courses = () => {
         status: "Pending",
       }));
   
-      await axios.post("/api/coursereq/add", newRequests, {
+      await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/coursereq/add`, newRequests, {
         headers: { "Content-Type": "application/json" },
       });
   

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Check, X, Edit, Info, MessageCircle } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -27,7 +27,7 @@ const Compre = () => {
 
   // All applications loaded from the backend
   const [applications, setApplications] = useState([]);
-  const { toast } = useToast();
+
 
   const [guideId, setGuideId] = useState(null);
 
@@ -42,7 +42,7 @@ const Compre = () => {
 
   // Fetch guide details (including guideId) when the component mounts
   useEffect(() => {
-    axios.get("http://localhost:8080/api/guides/me", { withCredentials: true })
+    axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/me`, { withCredentials: true })
       .then(response => {
         console.log(response.data);
         setGuideId(response.data); // Set guideId
@@ -60,7 +60,7 @@ const Compre = () => {
   useEffect(() => {
     if (!guideId) return;
 
-    axios.get(`http://localhost:8080/api/applications/guide/${guideId}`)
+    axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications/guide/${guideId}`)
       .then(response => setApplications(response.data))
       .catch(error => {
         console.error("Error fetching applications", error);
@@ -94,7 +94,7 @@ const Compre = () => {
 
   const handleConfirmAction = () => {
     const newStatus = actionType === 'approve' ? 'Approved' : 'Rejected';
-    axios.put(`http://localhost:8080/api/applications/${selectedRequest.id}`, {
+    axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications/${selectedRequest.id}`, {
       status: newStatus
     })
       .then(response => {
@@ -123,7 +123,7 @@ const Compre = () => {
   };
 
   const handleSaveEdit = (editedApplication) => {
-    axios.put(`http://localhost:8080/api/applications/${editedApplication.id}`, editedApplication)
+    axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications/${editedApplication.id}`, editedApplication)
       .then(response => {
         toast({
           title: "Application Updated",
@@ -185,7 +185,7 @@ const Compre = () => {
     // otherwise, use PUT to update it.
     if (applicationWithComment.guideComment === null) {
       // For POST, we need additional fields like examId and studentEmail
-      axios.post("http://localhost:8080/api/applications", {
+      axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications`, {
         examId: applicationWithComment.examId,
         studentEmail: applicationWithComment.studentEmail,
         ...payload
@@ -210,7 +210,7 @@ const Compre = () => {
         });
     } else {
       // If a guide comment already exists, update it using PUT
-      axios.put(`http://localhost:8080/api/applications/${applicationWithComment.id}`, payload, {
+      axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/applications/${applicationWithComment.id}`, payload, {
         headers: { "Content-Type": "application/json" }
       })
         .then(response => {

@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Search, FileText } from "lucide-react";
 import PublicationList from "@/components/Student/publications/PublicationList";
-import { useToast } from "@/hooks/use-toast";
+
 import axios from "axios"; // Ensure axios is imported
 
+import { toast } from 'react-hot-toast';
 const Publications = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [publications, setPublications] = useState([]);
   const [filteredPublications, setFilteredPublications] = useState([]);
@@ -22,35 +23,31 @@ const Publications = () => {
     const fetchProfileData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:8080/api/user/profile", {
-          withCredentials: true,
-        });
+      const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/profile`, {
+        withCredentials: true,
+      });
 
-        if (response.data && response.data.name && response.data.email && response.data.rollNumber) {
-          setStudent({
-            name: response.data.name,
-            email: response.data.email,
-            rollNumber: response.data.rollNumber,
-            orcidId: response.data.orcid || "",
-            researchArea: response.data.areaofresearch || "",
-          });
-        } else {
-          throw new Error("Invalid response format");
-        }
-      } catch (error) {
-        console.error("Error fetching profile data:", error);
-        toast({
-          title: "Error",
-          description: "Could not fetch profile data.",
-          variant: "destructive",
+      if (response.data && response.data.name && response.data.email && response.data.rollNumber) {
+        setStudent({
+        name: response.data.name,
+        email: response.data.email,
+        rollNumber: response.data.rollNumber,
+        orcidId: response.data.orcid || "",
+        researchArea: response.data.areaofresearch || "",
         });
+        // toast.success("Profile data loaded successfully.");
+      } else {
+        throw new Error("Invalid response format");
+      }
+      } catch (error) {
+      console.error("Error fetching profile data:", error);
       } finally {
-        setLoading(false);
+      setLoading(false);
       }
     };
 
     fetchProfileData();
-  }, []); // Only fetch profile data once when the component mounts
+    }, []); // Only fetch profile data once when the component mounts
 
   useEffect(() => {
     if (student) {
@@ -61,7 +58,7 @@ const Publications = () => {
 
   const fetchPublications = async (rollNo) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/publications/get/${rollNo}`, {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/get/${rollNo}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -71,13 +68,9 @@ const Publications = () => {
       const data = await response.json();
       setPublications(data);
       setFilteredPublications(data);
+      // toast.success("Publications loaded successfully.");
     } catch (error) {
       console.error("Fetch Error:", error);
-      toast({
-        title: "Error",
-        description: "Could not fetch publications.",
-        variant: "destructive",
-      });
     }
   };
 

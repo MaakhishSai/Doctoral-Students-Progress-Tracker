@@ -4,7 +4,7 @@ import PageLayout from "@/components/Guide/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck, Clock, FilePlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
+import { toast } from 'react-hot-toast';
 const Dashboardg = () => {
   const [guideEmail, setGuideEmail] = useState("");
   const [guideId, setGuideId] = useState(null);
@@ -15,32 +15,39 @@ const Dashboardg = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/coursereq/all", { withCredentials: true })
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/coursereq/all`, { withCredentials: true })
       .then((res) => {
         // Filter only pending requests
         const pending = res.data.filter((request) => request.status === "Pending");
         setPendingRequests(pending);
       })
-      .catch((err) => console.error("Error fetching course requests:", err));
+      .catch((err) => {
+        console.error("Error fetching course requests:", err);
+        toast.error("Failed to fetch course requests");
+      });
   }, []);
 
   // Fetch meetings for supervisor from backend
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/dc-meetings/fetch-for-supervisor", {
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/fetch-for-supervisor`, {
         withCredentials: true,
       })
       .then((res) => setMeetings(res.data))
-      .catch((err) => console.error("Error fetching meetings:", err));
+      .catch((err) => {
+        console.error("Error fetching meetings:", err);
+        toast.error("Failed to fetch meetings");
+      });
   }, []);
   console.log(pendingRequests);
   useEffect(() => {
     const fetchGuideEmail = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/user/super", { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/super`, { withCredentials: true });
         setGuideEmail(response.data.email || "");
       } catch (error) {
         console.error("Error fetching guide email:", error);
+        toast.error("Failed to fetch guide email");
       }
     };
     fetchGuideEmail();
@@ -50,10 +57,11 @@ const Dashboardg = () => {
     if (!guideEmail) return;
     const fetchGuideId = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/guides/email/${guideEmail}`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/email/${guideEmail}`, { withCredentials: true });
         setGuideId(response.data || null);
       } catch (error) {
         console.error("Error fetching guide ID:", error);
+        toast.error("Failed to fetch guide ID");
       }
     };
     fetchGuideId();
@@ -63,11 +71,12 @@ const Dashboardg = () => {
     if (!guideId) return;
     const fetchScholars = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/guides/${guideId}/students`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/${guideId}/students`, { withCredentials: true });
         setScholars(response.data || []);
       } catch (error) {
         console.error("Error fetching scholars:", error);
         setError("Failed to load scholars");
+        toast.error("Failed to load scholars");
       } finally {
         setLoading(false);
       }

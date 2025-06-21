@@ -21,7 +21,7 @@ const ScholarsList = () => {
   useEffect(() => {
     const fetchGuideEmail = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/user/super", { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/super`, { withCredentials: true });
         setGuideEmail(response.data.email || "");
       } catch (error) {
         console.error("Error fetching guide email:", error);
@@ -35,7 +35,7 @@ const ScholarsList = () => {
     if (!guideEmail) return;
     const fetchGuideId = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/guides/email/${guideEmail}`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/email/${guideEmail}`, { withCredentials: true });
         setGuideId(response.data || null);
       } catch (error) {
         console.error("Error fetching guide ID:", error);
@@ -51,7 +51,7 @@ const ScholarsList = () => {
     const fetchScholars = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/api/guides/${guideId}/students`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/${guideId}/students`, { withCredentials: true });
         const scholarsList = response.data || [];
 
         if (!Array.isArray(scholarsList) || scholarsList.length === 0) {
@@ -64,7 +64,7 @@ const ScholarsList = () => {
         // Fetch full details for each scholar
         const fullDetailsPromises = scholarsList.map((scholar) =>
           axios
-            .get(`http://localhost:8080/api/students/${scholar.rollNo}`, { withCredentials: true })
+            .get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${scholar.rollNo}`, { withCredentials: true })
             .then((res) => res.data)
             .catch((err) => {
               console.error(`Failed to fetch details for ${scholar.rollNo}`, err);

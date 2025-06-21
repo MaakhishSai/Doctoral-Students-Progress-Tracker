@@ -3,7 +3,7 @@ import { FileSpreadsheet, User, UserCog, Eye } from "lucide-react";
 import Layout from "@/components/Co-ordinator/layout/Layout";
 import FileUpload from "@/components/Co-ordinator/FileUpload";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from 'react-hot-toast';
 
 const UploadExcel = () => {
   const [file, setFile] = useState(null);
@@ -21,7 +21,7 @@ const UploadExcel = () => {
   // Fetch students
   const fetchStudents = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/students/all");
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/all`);
 
       if (!response.ok) {
         throw new Error(`Server error: ${response.status} ${response.statusText}`);
@@ -61,7 +61,7 @@ const UploadExcel = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8080/api/students/upload", {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/upload`, {
         method: "POST",
         body: formData,
         mode: 'cors',

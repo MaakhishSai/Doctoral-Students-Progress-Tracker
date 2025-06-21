@@ -4,6 +4,8 @@ import com.demo.rbac.model.Guide;
 import com.demo.rbac.model.Student;
 import com.demo.rbac.repository.GuideRepository;
 import com.demo.rbac.repository.StudentRepository;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -16,7 +18,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
@@ -36,7 +40,8 @@ import java.util.Optional;
 
 @Configuration
 public class SecurityConfig {
-
+    @Value("${frontend.url}")
+    private String frontend;
     private final OAuth2UserService customOAuth2UserService;
     private final AuthenticationFailureHandler customAuthenticationFailureHandler;
     private final StudentRepository studentRepository;
@@ -52,7 +57,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+    ClientRegistrationRepository clientRegistrationRepository) throws Exception {
+        OAuth2AuthorizationRequestResolver customResolver =
+        new CustomAuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
@@ -63,11 +71,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/coordinator/**").hasRole("COORDINATOR")
                         .requestMatchers("/api/supervisor/**").hasRole("SUPERVISOR")
                         .requestMatchers("/api/student/**").hasRole("STUDENT")
-                        .requestMatchers("api/user/profile").permitAll()
-                        .requestMatchers("api/user/super").permitAll()
+                        .requestMatchers("/api/user/profile").permitAll()
+                        .requestMatchers("/api/user/super").permitAll()
                         .requestMatchers("/api/students/upload").permitAll()
                         .requestMatchers("/api/students/all").permitAll()
-                        .requestMatchers("api/students/**").permitAll()
+                        .requestMatchers("/api/students/**").permitAll()
                         .requestMatchers("/api/dc-meetings/**").permitAll()
                         .requestMatchers("/api/students/").permitAll()
                         .requestMatchers("/api/**").permitAll()
@@ -89,6 +97,9 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form.disable())
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(endpoint ->
+                        endpoint.authorizationRequestResolver(customResolver)  // << Important line
+                        )
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler((request, response, authentication) -> {
                             try {
@@ -112,12 +123,13 @@ public class SecurityConfig {
         String userEmail = authentication.getName();
 
         // Retrieve requested role from cookies instead of session
-        String requestedRoleStr = getCookieValue(request, "requestedRole");
+        // String requestedRoleStr = getCookieValue(request, "requestedRole");
+        String requestedRoleStr = request.getParameter("state");
 
-        System.out.println("Requested Role from Cookie: " + requestedRoleStr);
+        System.out.println("Requested Role from Cook: " + requestedRoleStr);
 
         if (requestedRoleStr == null) {
-            response.sendRedirect("http://localhost:5173/login?error=role_missing");
+            response.sendRedirect(frontend+ "/login?error=role_missing");
             return;
         }
 
@@ -126,7 +138,7 @@ public class SecurityConfig {
         try {
             requestedRole = UserRole.valueOf(requestedRoleStr.toUpperCase());
         } catch (IllegalArgumentException e) {
-            response.sendRedirect("http://localhost:5173/login?error=invalid_requested_role");
+            response.sendRedirect(frontend+ "/login?error=invalid_requested_role");
             return;
         }
 
@@ -135,7 +147,7 @@ public class SecurityConfig {
         if (requestedRole == UserRole.STUDENT) {
             Optional<Student> optionalStudent = studentRepository.findByEmail(userEmail);
             if (optionalStudent.isEmpty()) {
-                response.sendRedirect("http://localhost:5173/login?error=user_not_found");
+                response.sendRedirect(frontend+ "/login?error=user_not_found");
                 return;
             }
             Student student = optionalStudent.get();
@@ -144,7 +156,7 @@ public class SecurityConfig {
         else if (requestedRole == UserRole.SUPERVISOR) {
             Optional<Guide> optionalGuide = guideRepository.findByEmail(userEmail);
             if (optionalGuide.isEmpty()) {
-                response.sendRedirect("http://localhost:5173/login?error=user_not_found");
+                response.sendRedirect(frontend+ "/login?error=user_not_found");
                 return;
             }
             Guide guide = optionalGuide.get();
@@ -156,23 +168,23 @@ public class SecurityConfig {
 
         // Role mismatch check
         if (actualRole == null || !actualRole.equals(requestedRole)) {
-            response.sendRedirect("http://localhost:5173/login?error=role_mismatch");
+            response.sendRedirect(frontend + "/login?error=role_mismatch");
             return;
         }
 
         // Redirect based on actual role
         switch (actualRole) {
             case STUDENT:
-                response.sendRedirect("http://localhost:5173/student-dashboard");
+                response.sendRedirect(frontend+ "/student-dashboard");
                 break;
             case SUPERVISOR:
-                response.sendRedirect("http://localhost:5173/index2");
+                response.sendRedirect(frontend+ "/index2");
                 break;
             case COORDINATOR:
-                response.sendRedirect("http://localhost:5173/dashboardc");
+                response.sendRedirect(frontend+ "/dashboardc");
                 break;
             default:
-                response.sendRedirect("http://localhost:5173/login?error=invalid_role");
+                response.sendRedirect(frontend+ "/login?error=invalid_role");
         }
     }
 

@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, FileText, Download, Search, X, Plus, MessageSquare } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 
 const MeetingStatusTabs = ['draft', 'submitted', 'approved', 'rejected', 'resubmit'];
 
@@ -55,12 +55,14 @@ const DCMeetings = () => {
   // ------------------------------------
   const fetchMeetings = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/dc-meetings/fetch", {
+      const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/fetch`, {
         withCredentials: true,
       });
       setMeetings(response.data);
+      // toast.success("Meetings fetched successfully!");
     } catch (error) {
       console.error("Error fetching meetings:", error);
+      toast.error("Failed to fetch meetings. Please try again.");
     }
   };
 
@@ -76,7 +78,7 @@ const DCMeetings = () => {
       // Submit an existing meeting
       try {
         const response = await axios.put(
-          `http://localhost:8080/api/dc-meetings/submit/${id}`,
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/submit/${id}`,
           {},
           { withCredentials: true }
         );
@@ -104,7 +106,7 @@ const DCMeetings = () => {
         }
 
         const response = await axios.post(
-          "http://localhost:8080/api/dc-meetings/create",
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/create`,
           formData,
           { withCredentials: true }
         );
@@ -139,7 +141,7 @@ const DCMeetings = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:8080/api/dc-meetings/update/${resubmitData.id}`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/update/${resubmitData.id}`,
         formData,
         {
           withCredentials: true,
@@ -165,7 +167,7 @@ const DCMeetings = () => {
   const handleDownload = async (id, fileName) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/dc-meetings/download/${id}`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/download/${id}`,
         {
           withCredentials: true,
           responseType: 'blob',
@@ -206,7 +208,7 @@ const DCMeetings = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:8080/api/dc-meetings/update/${editMeeting.id}`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/update/${editMeeting.id}`,
         formData,
         {
           withCredentials: true,

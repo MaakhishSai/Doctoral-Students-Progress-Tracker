@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Student/layout/Layout';
 import StudentInfoCard from '@/components/Student/Profile/StudentInfoCard';
 import DCInfoCard from '@/components/Student/Profile/DCInfoCard';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
 // Initial student state (empty values)
@@ -36,13 +36,13 @@ const Profile = () => {
   const [student, setStudent] = useState(initialStudentData);
   const [dc, setDC] = useState(initialDCData);
   const [hasDC, setHasDC] = useState(false);
-  const { toast } = useToast();
+
 
   // First effect: Fetch student profile including guide details
   useEffect(() => {
     const fetchStudentProfile = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/user/profile', {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/profile`, {
           withCredentials: true
         });
         console.log("Profile response:", response.data);
@@ -60,11 +60,13 @@ const Profile = () => {
           };
           setStudent(updatedStudent);
           console.log("Fetched student:", updatedStudent);
+          // toast.success("Profile loaded successfully");
         } else {
           throw new Error('Invalid response format for student profile');
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
+        toast.error("Failed to load profile");
       }
     };
 
@@ -77,7 +79,7 @@ const Profile = () => {
       if (!student.rollNumber) return;
       try {
         const dcResponse = await axios.get(
-          `http://localhost:8080/api/students/${student.rollNumber}/dc/get-dc`,
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${student.rollNumber}/dc/get-dc`,
           { withCredentials: true }
         );
         const fetchedDC = dcResponse.data;
@@ -96,6 +98,7 @@ const Profile = () => {
           members: fetchedDC.members
         };
         setDC(transformedDC);
+        // toast.success("DC details loaded successfully");
       } catch (dcError) {
         if (dcError.response && dcError.response.status === 404) {
           console.log("No existing DC found. Prepopulating supervisor details from profile.");
@@ -109,8 +112,10 @@ const Profile = () => {
             },
             members: initialDCData.members
           });
+          toast("No DC found. Please create your DC details.");
         } else {
           console.error("Error fetching DC data:", dcError);
+          toast.error("Failed to load DC details");
         }
       }
     };
@@ -145,18 +150,20 @@ const Profile = () => {
       if (!hasDC) {
         // Create a new DC record
         response = await axios.post(
-          `http://localhost:8080/api/students/${student.rollNumber}/dc/create-dc`,
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${student.rollNumber}/dc/create-dc`,
           payload,
           { withCredentials: true }
         );
         setHasDC(true);
+        toast.success("DC created successfully");
       } else {
         // Update the existing DC record
         response = await axios.put(
-          `http://localhost:8080/api/students/${student.rollNumber}/dc/put-dc`,
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${student.rollNumber}/dc/put-dc`,
           payload,
           { withCredentials: true }
         );
+        toast.success("DC updated successfully");
       }
       
       const updatedDCFromBackend = response.data;
@@ -190,7 +197,7 @@ const Profile = () => {
   };
 
   // Wait until student.rollNumber is defined
-  if (!student || !student.rollNumber) return <div>Loading...</div>;
+  // if (!student || !student.rollNumber) return <div>Loading...</div>;
 
   return (
     <Layout>

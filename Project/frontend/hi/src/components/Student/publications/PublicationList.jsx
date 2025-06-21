@@ -55,7 +55,7 @@ const PublicationList = ({ publications = [], onUpdateStatus }) => {
   const handleSaveStatus = async (publication) => {
     if (editingStatus.id === publication.id && editingStatus.status) {
       try {
-        const response = await fetch(`/api/publications/${publication.id}`, {
+        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/${publication.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -72,7 +72,7 @@ const PublicationList = ({ publications = [], onUpdateStatus }) => {
         setEditingStatus({ id: null, status: null });
   
         // ✅ Call API to add history record
-        const historyResponse = await fetch(`/api/publications/history/add`, {
+        const historyResponse = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/history/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

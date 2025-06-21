@@ -19,7 +19,7 @@ const StudentInfoCard = ({ studentData, onUpdate }) => {
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/students/${studentData.rollNumber}`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${studentData.rollNumber}`, {
           withCredentials: true
         });
         console.log(response.data);
@@ -46,7 +46,7 @@ const StudentInfoCard = ({ studentData, onUpdate }) => {
   };
 
   const handleSave = () => {
-    axios.put(`http://localhost:8080/api/students/${studentData.rollNumber}`, {
+    axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${studentData.rollNumber}`, {
       rollNumber: studentData.rollNumber,  // Include roll number
       name: studentData.name,              // Keep other fields unchanged
       email: studentData.email,

@@ -26,7 +26,7 @@ const ScholarProfiless = () => {
     //if (!guideId) return;
     const fetchScholars = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/students/all`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/all`, { withCredentials: true });
         console.log(response.data);
         setScholars(response.data || []);
       } catch (error) {
@@ -49,7 +49,7 @@ const ScholarProfiless = () => {
 
     const fetchStudentProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/students/${selectedScholarRollNo}`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${selectedScholarRollNo}`, {
           withCredentials: true,
         });
         console.log("Profile response:", response.data);

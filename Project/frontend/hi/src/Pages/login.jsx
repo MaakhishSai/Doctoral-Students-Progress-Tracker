@@ -6,15 +6,41 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FcGoogle } from "react-icons/fc";
 import { Eye, EyeOff } from "lucide-react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-
+import { toast } from 'react-hot-toast';
+import { useEffect } from "react";
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate(); // Initialize navigation
+  useEffect(() => {
+  
+  const params = new URLSearchParams(location.search);
+  const error = params.get("error");
 
+  switch (error) {
+    case "user_not_found":
+      setErrorMessage("User not found. Please contact admin.");
+      break;
+    case "role_mismatch":
+      setErrorMessage("Selected role doesn't match your account.");
+      break;
+    case "role_missing":
+      setErrorMessage("No role selected. Please try again.");
+      break;
+    case "invalid_requested_role":
+      setErrorMessage("Invalid role selected.");
+      break;
+    case "invalid_role":
+      setErrorMessage("Invalid role. Contact admin.");
+      break;
+    default:
+      setErrorMessage("");
+  }
+}, [location.search]);
   const handleGoogleSignIn = (role) => {
-    document.cookie = `requestedRole=${role}; path=/`;
-    window.location.href = `http://localhost:8080/oauth2/authorization/google`;
+    document.cookie = `requestedRole=${role}; path=/; SameSite=None;`;
+    window.location.href = `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/oauth2/authorization/google?role=${role}`;
   };
   
 
@@ -28,7 +54,7 @@ export default function LoginPage() {
   const handleAdminLogin = async () => {
     if (selectedRole === "PhD Coordinator") {
       try {
-        const response = await fetch("http://localhost:8080/api/auth/login", {
+        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password }),
@@ -39,13 +65,14 @@ export default function LoginPage() {
         if (response.ok) {
           localStorage.setItem("role", data.role); // Store role
           localStorage.setItem("isAuthenticated", "true");
+          toast.success("Login successful!");
           window.location.href = "/dashboardc"; // Redirect to dashboard
         } else {
-          alert("Invalid username or password!");
+          toast.error("Invalid username or password!");
         }
       } catch (error) {
         console.error("Login failed:", error);
-        alert("Please check your credentials");
+        toast.error("Please check your credentials");
       }
     }
   };
@@ -57,6 +84,12 @@ export default function LoginPage() {
     >
       <div className="bg-black/80 backdrop-blur-md p-8 rounded-xl shadow-lg w-96">
         <h2 className="text-2xl font-bold text-center text-white">PhD Connect</h2>
+        {errorMessage && (
+  <div className="bg-red-100 text-red-700 border border-red-400 px-4 py-2 rounded text-sm mb-4 text-center">
+    {errorMessage}
+  </div>
+)}
+
         <p className="text-sm text-gray-300 text-center mb-4">
           Platform for PhD student's Progress tracker
         </p>

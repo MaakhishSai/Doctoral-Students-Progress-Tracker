@@ -25,7 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-hot-toast';
 import {
   Popover,
   PopoverContent,
@@ -40,7 +40,7 @@ import {
 
 const MeetingApprovals = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [records, setRecords] = useState([]);
 
@@ -53,7 +53,7 @@ const MeetingApprovals = () => {
   // Fetch real data from backend for supervisor
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/dc-meetings/fetch-for-supervisor", {
+      .get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/fetch-for-supervisor`, {
         withCredentials: true,
       })
       .then((res) => setRecords(res.data))
@@ -107,7 +107,7 @@ const MeetingApprovals = () => {
   const handleAction = async (id, action, comment) => {
     try {
       const response = await axios.put(
-        `http://localhost:8080/api/dc-meetings/supervisor-action/${id}`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/supervisor-action/${id}`,
         { 
           status: action.toLowerCase(),
           comments: comment,
@@ -142,7 +142,7 @@ const MeetingApprovals = () => {
   const handleDownload = async (id, fileName) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/dc-meetings/download/${id}`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/dc-meetings/download/${id}`,
         {
           withCredentials: true,
           responseType: "blob",

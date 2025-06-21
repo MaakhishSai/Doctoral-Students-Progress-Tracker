@@ -9,7 +9,7 @@ const Layout = ({ children }) => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/user/profile', {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/profile`, {
           withCredentials: true
         });
 

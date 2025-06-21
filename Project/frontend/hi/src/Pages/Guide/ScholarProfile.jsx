@@ -26,7 +26,7 @@ const ScholarProfiles = () => {
   useEffect(() => {
     const fetchGuideEmail = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/user/super", { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/super`, { withCredentials: true });
         setGuideEmail(response.data.email || "");
       } catch (error) {
         console.error("Error fetching guide email:", error);
@@ -41,7 +41,7 @@ const ScholarProfiles = () => {
     if (!guideEmail) return;
     const fetchGuideId = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/guides/email/${guideEmail}`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/email/${guideEmail}`, { withCredentials: true });
         setGuideId(response.data || null);
       } catch (error) {
         console.error("Error fetching guide ID:", error);
@@ -56,7 +56,7 @@ const ScholarProfiles = () => {
     if (!guideId) return;
     const fetchScholars = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/guides/${guideId}/students`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/${guideId}/students`, { withCredentials: true });
         setScholars(response.data || []);
       } catch (error) {
         console.error("Error fetching scholars:", error);
@@ -78,7 +78,7 @@ const ScholarProfiles = () => {
 
     const fetchStudentProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/students/${selectedScholarRollNo}`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${selectedScholarRollNo}`, {
           withCredentials: true,
         });
         console.log("Profile response:", response.data);

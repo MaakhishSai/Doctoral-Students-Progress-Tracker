@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import PageLayout from "@/components/Guide/layout/Layout";
 import axios from 'axios'; // Don't forget to import axios
+import { toast } from 'react-hot-toast';
 const Publicationsg = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [students, setStudents] = useState([]);
@@ -16,18 +17,21 @@ const Publicationsg = () => {
   useEffect(() => {
     const fetchGuideEmail = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/user/super', {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/super`, {
           withCredentials: true
         });
   
         const data = response.data; // Axios already parses JSON
         if (data.email) {
           setGuideEmail(data.email);
+          // toast.success("Guide email fetched successfully");
         } else {
           console.error("Failed to fetch guide email");
+          toast.error("Failed to fetch guide email");
         }
       } catch (error) {
         console.error("Error fetching guide email:", error);
+        toast.error("Error fetching guide email");
       }
     };
   
@@ -40,20 +44,21 @@ const Publicationsg = () => {
     const fetchGuideId = async () => {
       console.log("Guide Email being used for API request:", guideEmail);
       try {
-        const response = await axios.get(`http://localhost:8080/api/guides/email/${guideEmail}`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/email/${guideEmail}`, {
           withCredentials: true,
         });
-    
+
         console.log("Guide ID response:", response.data); // Log response
-       // console.log("Students API Response:", response.data);
         if (response.data) {
-         // console.log("Guide ID set:", response.data);
           setGuideId(response.data);
+          // toast.success("Guide ID fetched successfully");
         } else {
           console.error("Guide ID not found in response");
+          toast.error("Guide ID not found in response");
         }
       } catch (error) {
         console.error("Error fetching guide ID:", error);
+        toast.error("Error fetching guide ID");
       }
     };
 
@@ -62,27 +67,26 @@ const Publicationsg = () => {
 
   // Step 3: Fetch Students when Guide ID is Available
   useEffect(() => {
-    //console.log("gi");
     if (!guideId) return;
-    
 
     const fetchStudents = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/guides/${guideId}/students`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/${guideId}/students`, {
           withCredentials: true, // Include credentials if needed
         });
         console.log("Students API Response:", response.data);
 
         if (response.data) {
           setStudents(response.data);
-          
           setFilteredStudents(response.data);
-          // console.log(filteredStudentsstudents);
+          // toast.success("Students fetched successfully");
         } else {
           console.error("Error fetching students");
+          toast.error("Error fetching students");
         }
       } catch (error) {
         console.error("Error fetching students:", error);
+        toast.error("Error fetching students");
       }
     };
 

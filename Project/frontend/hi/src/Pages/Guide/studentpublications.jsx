@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import PageLayout from "@/components/layout/Layout";
 import { Link } from "react-router-dom";
 import { History } from 'lucide-react';
-
-const API_BASE_URL = "http://localhost:8080/api"; // Backend base URL
+import { toast } from 'react-hot-toast';
+// const API_BASE_URL = "http://localhost:8080/api"; // Backend base URL
 
 const StudentPublications = () => {
   const { rollNumber } = useParams(); // Extract roll number from URL
@@ -33,18 +33,18 @@ const StudentPublications = () => {
 
       try {
         console.log(`Fetching student details for rollNumber: ${rollNumber}`);
-        const studentResponse = await axios.get(`${API_BASE_URL}/students/${rollNumber}`);
+        const studentResponse = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${rollNumber}`);
         console.log("Student Data:", studentResponse.data);
         setStudent(studentResponse.data);
 
         console.log(`Fetching publications for rollNumber: ${rollNumber}`);
-        const publicationsResponse = await axios.get(`${API_BASE_URL}/publications/get/${rollNumber}`);
+        const publicationsResponse = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/get/${rollNumber}`);
         console.log("Publications Data:", publicationsResponse.data);
         setPublications(publicationsResponse.data);
         
 
         console.log(`Fetching publication count for rollNumber: ${rollNumber}`);
-        const countResponse = await axios.get(`${API_BASE_URL}/students/${rollNumber}/publications`);
+        const countResponse = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${rollNumber}/publications`);
         console.log("Publication Count:", countResponse.data);
         setPublicationCount(countResponse.data);
       } catch (err) {

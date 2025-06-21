@@ -22,16 +22,19 @@ import StudentPublications from "./pages/Guide/studentpublications";
 import Compre from "./pages/Guide/compre-exam.jsx";
 import PublicationHistory from "./pages/Guide/publicationh.jsx";
 import ScholarProfiless from "./pages/Co-ordinator/ScholarProfile";
-
+import { Navigate } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 // import Index2 from "./Pages/index2"; 
 import "./index.css";
 
 export default function App() {
   return (
+    <>
     <Router>
       <Routes>
         
-        <Route path="/" element={<Login />} /> {/* Login Page */}
+        <Route path="/" element={<Navigate to="/login" />} /> {/* Login Page */}
+        <Route path="/login" element={<Login />} /> {/* Login Page */}
         {/* this is for student home page on successful login */}
         <Route path="/student-dashboard" element={<Index />} /> {/* Home Page (index.jsx) */}
         <Route path="/profile" element={<Profile />} /> {/*  (profile.jsx) */}
@@ -57,5 +60,7 @@ export default function App() {
         <Route path="/publicationh/:rollNumber" element={<PublicationHistory />} />
       </Routes>
     </Router>
+    <Toaster position="top-right" />
+    </>
   );
 }

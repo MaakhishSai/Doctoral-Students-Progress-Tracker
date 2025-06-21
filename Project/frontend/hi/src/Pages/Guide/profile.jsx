@@ -3,7 +3,7 @@ import PageLayout from "@/components/Guide/layout/Layout";
 import ProfileOverview from "@/components/Guide/profile/ProfileOverview";
 import ScholarsList from "@/components/Guide/profile/ScholarsList";
 import axios from 'axios';
-
+import { toast } from 'react-hot-toast';
 // Mock data - Keeping all other fields unchanged
 const mockGuideData = {
   designation: "Associate Professor",
@@ -41,7 +41,7 @@ const Profileg = () => {
     const fetchGuideData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/api/user/super', {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/user/super`, {
           withCredentials: true
         });
 
@@ -60,6 +60,7 @@ const Profileg = () => {
       } catch (err) {
         console.error('Error fetching guide data:', err);
         setError('Failed to load guide data. Please try again later.');
+        toast.error('Failed to load guide data. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -75,7 +76,7 @@ const Profileg = () => {
     const fetchGuideId = async () => {
       try {
         setLoading(true); // Ensure loading is set before request
-        const response = await axios.get(`http://localhost:8080/api/guides/email/${guideEmail}`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/email/${guideEmail}`, { withCredentials: true });
         
         console.log("Guide ID Response:", response.data);
 
@@ -102,7 +103,7 @@ const Profileg = () => {
     const fetchScholars = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/api/guides/${guideId}/students`, { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/guides/${guideId}/students`, { withCredentials: true });
 
         console.log("Scholars Response:", response.data);
 
@@ -133,7 +134,7 @@ const Profileg = () => {
     const fetchStudentProfile = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/api/students/${selectedScholarRollNo}`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${selectedScholarRollNo}`, {
           withCredentials: true,
         });
 

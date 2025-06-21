@@ -27,7 +27,7 @@ const ScholarDetail= ({ scholar }) => {
     const fetchDCMembers = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/students/${scholar.roll}/dc/get-dc`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/students/${scholar.roll}/dc/get-dc`
         );
         console.log("hi",response.data);
         setDcMembers(response.data); // Assuming response contains an array of DC members
@@ -51,7 +51,7 @@ const ScholarDetail= ({ scholar }) => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/coursereq/approved/${scholar.roll}`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/coursereq/approved/${scholar.roll}`
         );
         console.log("Courses Data:", response.data);
         setCourses(response.data);
@@ -70,7 +70,7 @@ const ScholarDetail= ({ scholar }) => {
     const fetchPublications = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/publications/get/${scholar.roll}`
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/publications/get/${scholar.roll}`
         );
         ;
         setPublications(response.data);

@@ -32,6 +32,8 @@ public class StudentController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+    
+
 
     @GetMapping("/{rollNumber}/publications")
     public ResponseEntity<Integer> getPublicationCount(@PathVariable String rollNumber) {
